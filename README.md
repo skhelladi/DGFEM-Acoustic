@@ -28,6 +28,7 @@ Eigen
 Lapack
 Blas
 OpenMP
+Libtbb
 ```
 
 ### Installing

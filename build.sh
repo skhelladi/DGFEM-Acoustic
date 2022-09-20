@@ -52,15 +52,32 @@ else
 	echo "Lapack/Blas installed.";
 fi
 
-#if [ ! -d "3rdParty/gmsh" ]; then
-#	echo "Gmsh not found, installing...";
-#	wget http://gmsh.info/bin/Linux/gmsh-4.1.5-Linux64-sdk.tgz
-#	tar -xf gmsh-4.1.5-Linux64-sdk.tgz
-#	rm -rf gmsh-4.1.5-Linux64-sdk.tgz
-#	mv gmsh-4.1.5-Linux64-sdk 3rdParty/gmsh
-#	echo "Gmsh installed."
-#else
-#       echo "Gmsh found.";
+dpkg -s libtbb2 > /dev/null 2>&1;
+if [ $? -eq 0 ]; then
+	echo "TBB found.";
+else
+	echo "TBB not found, installing...";
+	sudo apt-get -y install libtbb2;
+	echo "TBB installed.";
+fi
+
+dpkg -s libglu1-mesa > /dev/null 2>&1;
+if [ $? -eq 0 ]; then
+	echo "libGLU found.";
+else
+	echo "libGLU not found, installing...";
+	sudo apt-get -y install libglu1-mesa;
+	echo "libGLU installed.";
+fi
+
+dpkg -s libxft2 > /dev/null 2>&1;
+if [ $? -eq 0 ]; then
+	echo "libxft found.";
+else
+	echo "libxft not found, installing...";
+	sudo apt-get -y install libxft2;
+	echo "libxft2 installed.";
+fi
 
 if [ ! -d "3rdParty/gmsh" ]; then
 	echo "Gmsh not found, installing...";
