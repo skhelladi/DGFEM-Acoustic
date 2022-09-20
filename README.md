@@ -3,17 +3,20 @@
 [![version](https://img.shields.io/badge/version-1.3.3-red)](https://github.com/skhelladi/DGFEM-CAA/releases/tag/v1.3.3) 
 [![compilers](https://img.shields.io/badge/c++-17%20|%2020-27ae60.svg)](https://github.com/skhelladi/DGFEM-CAA/releases/tag/v1.3.3) 
 
-This repository implements a discontinuous Galerkin finite element method (DGFEM) applied to the linearized Euler equations and the acoustic perturbation equations. The solver is based on [GMSH](http://gmsh.info/) library and supports a wide range of features:
+This repository implements a discontinuous Galerkin finite element method (DGFEM) applied to the linearized Euler equations and the acoustic 
+perturbation equations. 
+The solver is based on [GMSH](http://gmsh.info/) library and supports a wide range of features:
 
 - 1D, 2D, 3D problems
 - 4-th order Runge-Kutta
 - High order elements
 - Absorbing and reflecting boundaries
-- Complex geometry and unstructured grid
+- Complex geometry and unstructured grid (only triangles (2D) and tetrahedrons (3D) elements are supported)
+- VTK Post-processing (use [Paraview](https://www.paraview.org/)) 
 
-| Auditorium     | Isosurfaces     | Bulk|
+<!-- | Auditorium     | Isosurfaces     | Bulk|
 | ------------- |:-------------:| :-------------:| 
-| <img src="https://gitlab.ensam.eu/khelladi/DGFEM-Acoustic/-/raw/b1026a1c6b9d312d02f6f70e776ed98e054ef00a/assets/auditorium_source2_2.png" width="400" height="200" />    | <img src="https://gitlab.ensam.eu/khelladi/DGFEM-Acoustic/-/raw/b1026a1c6b9d312d02f6f70e776ed98e054ef00a/assets/auditorium_source_iso1.png" width="400" height="200" />  | <img src="https://gitlab.ensam.eu/khelladi/DGFEM-Acoustic/-/raw/b1026a1c6b9d312d02f6f70e776ed98e054ef00a/assets/auditorium_source_bulk1.png" width="400" height="200" /> |
+| <img src="https://gitlab.ensam.eu/khelladi/DGFEM-Acoustic/-/raw/b1026a1c6b9d312d02f6f70e776ed98e054ef00a/assets/auditorium_source2_2.png" width="400" height="200" />    | <img src="https://gitlab.ensam.eu/khelladi/DGFEM-Acoustic/-/raw/b1026a1c6b9d312d02f6f70e776ed98e054ef00a/assets/auditorium_source_iso1.png" width="400" height="200" />  | <img src="https://gitlab.ensam.eu/khelladi/DGFEM-Acoustic/-/raw/b1026a1c6b9d312d02f6f70e776ed98e054ef00a/assets/auditorium_source_bulk1.png" width="400" height="200" /> | -->
 
 
 ## Getting Started
