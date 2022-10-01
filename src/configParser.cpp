@@ -1,11 +1,11 @@
-#include <iostream>
-#include <fstream>
 #include <algorithm>
-#include <string>
-#include <map>
-#include <gmsh.h>
 #include <cstdio>
+#include <fstream>
+#include <gmsh.h>
+#include <iostream>
+#include <map>
 #include <sstream>
+#include <string>
 #include <utils.h>
 
 #include "configParser.h"
@@ -74,40 +74,62 @@ namespace config
                 {
                     std::vector<std::string> sep = split(iter->second, ',');
 
-                    double x = std::stod(sep[1]);
-                    double y = std::stod(sep[2]);
-                    double z = std::stod(sep[3]);
-                    double size = std::stod(sep[4]);
-                    double amp = std::stod(sep[5]);
-                    double freq = std::stod(sep[6]);
-                    double phase = std::stod(sep[7]);
-                    double duration = std::stod(sep[8]);
-                    double pole;
-                    if (sep[0] == "dipole")
+                    if (sep[0] != "udf")
                     {
-                        pole = 1;
-                        std::vector<double> source1 = {pole, x - size, y, z, size / 2., amp, freq, phase, duration};
-                        std::vector<double> source2 = {pole, x + size, y, z, size / 2., amp, freq, phase + M_PI, duration};
-                        config.sources.push_back(source1);
-                        config.sources.push_back(source2);
-                    }
-                    else if (sep[0] == "quadrupole")
-                    {
-                        pole = 2;
-                        std::vector<double> source1 = {pole, x - size, y, z, size / 2., amp, freq, phase, duration};
-                        std::vector<double> source2 = {pole, x + size, y, z, size / 2., amp, freq, phase, duration};
-                        std::vector<double> source3 = {pole, x, y - size, z, size / 2., amp, freq, phase + M_PI, duration};
-                        std::vector<double> source4 = {pole, x, y + size, z, size / 2., amp, freq, phase + M_PI, duration};
-                        config.sources.push_back(source1);
-                        config.sources.push_back(source2);
-                        config.sources.push_back(source3);
-                        config.sources.push_back(source4);
+                        double x = std::stod(sep[1]);
+                        double y = std::stod(sep[2]);
+                        double z = std::stod(sep[3]);
+                        double size = std::stod(sep[4]);
+                        double amp = std::stod(sep[5]);
+                        double freq = std::stod(sep[6]);
+                        double phase = std::stod(sep[7]);
+                        double duration = std::stod(sep[8]);
+                        double pole;
+                        if (sep[0] == "dipole")
+                        {
+                            pole = 1;
+
+                            Sources S1("", {pole, x - size, y, z, size / 2., amp, freq, phase, duration});
+                            Sources S2("", {pole, x + size, y, z, size / 2., amp, freq, phase + M_PI, duration});
+                            config.sources.push_back(S1);
+                            config.sources.push_back(S2);
+                        }
+                        else if (sep[0] == "quadrupole")
+                        {
+                            pole = 2;
+                        
+                            Sources S1("", {pole, x - size, y, z, size / 2., amp, freq, phase, duration});
+                            Sources S2("", {pole, x + size, y, z, size / 2., amp, freq, phase, duration});
+                            Sources S3("", {pole, x, y - size, z, size / 2., amp, freq, phase + M_PI, duration});
+                            Sources S4("", {pole, x, y + size, z, size / 2., amp, freq, phase + M_PI, duration});
+                            config.sources.push_back(S1);
+                            config.sources.push_back(S2);
+                            config.sources.push_back(S3);
+                            config.sources.push_back(S4);
+                        }
+                        else //! monopole
+                        {
+                            pole = 0;
+                        
+                            Sources S("", {pole, x, y, z, size, amp, freq, phase, duration});
+                            config.sources.push_back(S);
+                        }
                     }
                     else
                     {
-                        pole = 0;
-                        std::vector<double> source = {pole, x, y, z, size, amp, freq, phase, duration};
-                        config.sources.push_back(source);
+                        std::string expr = sep[1];
+                        
+                        if(expr.front()=='"') expr.erase(0,1);
+                        if(expr.back()=='"') expr.pop_back();
+
+                        double x = std::stod(sep[2]);
+                        double y = std::stod(sep[3]);
+                        double z = std::stod(sep[4]);
+                        double size = std::stod(sep[5]);
+                        double duration = std::stod(sep[6]);
+                        double pole = -1;
+                        Sources S(expr, {pole, x, y, z, size, duration});
+                        config.sources.push_back(S);
                     }
                 }
                 else if (key.find("initialCondtition") == 0)
@@ -163,5 +185,3 @@ namespace config
         return config;
     }
 }
-
-

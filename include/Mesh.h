@@ -21,6 +21,17 @@
 #include "configParser.h"
 #include "utils.h"
 
+//! VTK headers
+#include <vtkCellArray.h>
+#include <vtkDoubleArray.h>
+#include <vtkNew.h>
+#include <vtkPointData.h>
+#include <vtkCellData.h>
+#include <vtkTetra.h>
+#include <vtkTriangle.h>
+#include <vtkUnstructuredGrid.h>
+#include <vtkXMLUnstructuredGridWriter.h>
+
 #ifndef DGALERKIN_MESH_H
 #define DGALERKIN_MESH_H
 
@@ -189,7 +200,8 @@ public:
      * @brief Write VTK
      * Added by Sofiane KHELLADI in 11/03/2022
      */
-    void writeVTU(std::string filename, std::vector<std::vector<double>> &u);
+    // void writeVTU(std::string filename, std::vector<std::vector<double>> &u);
+    void writeVTUb(std::string filename, std::vector<std::vector<double>> &u);
     void writePVD(std::string filename);
 
 private:

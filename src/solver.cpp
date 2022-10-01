@@ -96,10 +96,10 @@ namespace solver
                 std::vector<double> coord, paramCoord;
                 int _dim, _tag;
                 gmsh::model::mesh::getNode(mesh.getElNodeTags()[n], coord, paramCoord, _dim, _tag);
-                if (pow(coord[0] - config.sources[i][1], 2) +
-                        pow(coord[1] - config.sources[i][2], 2) +
-                        pow(coord[2] - config.sources[i][3], 2) <
-                    pow(config.sources[i][4], 2))
+                if (pow(coord[0] - config.sources[i].source[1], 2) +
+                        pow(coord[1] - config.sources[i].source[2], 2) +
+                        pow(coord[2] - config.sources[i].source[3], 2) <
+                    pow(config.sources[i].source[4], 2))
                 {
                     indice.push_back(n);
                 }
@@ -111,12 +111,13 @@ namespace solver
          * Main Loop : Time iteration
          */
         std::ofstream outfile("residuals.txt");
-        outfile << "time;res_p;res_rho;res_vx;res_vy;res_vz" << std::endl;
+        outfile << "time;res_p;res_rho;res_vx;res_vy;res_vz;elapsed_time" << std::endl;
         auto start = std::chrono::system_clock::now();
         for (double t = config.timeStart, step = 0, tDisplay = 0; t <= config.timeEnd;
              t += config.timeStep, tDisplay += config.timeStep, ++step)
         {
 
+            auto start_time = std::chrono::system_clock::now();
             std::vector<double> residual(5, 0.0);
             /**
              *  Savings and prints
@@ -145,24 +146,35 @@ namespace solver
                 auto end = std::chrono::system_clock::now();
                 auto elapsed = std::chrono::duration_cast<std::chrono::seconds>(end - start);
                 gmsh::logger::write("[" + std::to_string(t) + "/" + std::to_string(config.timeEnd) + "s] Step number : " + std::to_string((int)step) + ", Elapsed time: " + std::to_string(elapsed.count()) + "s");
-                screen_display::write_string("time\t\tres_p\t\tres_rho\t\tres_vx\t\tres_vy\t\tres_vz", BOLDBLUE);
+                screen_display::write_string("time\t\tres_p\t\tres_rho\t\tres_vx\t\tres_vy\t\tres_vz\t\telapsed time", BOLDBLUE);
                 // mesh.writeVTK("result.vtk");
                 std::string vtu_filename = "results/result" + std::to_string((int)step) + ".vtu";
-                mesh.writeVTU(vtu_filename, u);
+                mesh.writeVTUb(vtu_filename, u);
             }
 
             /**
              * Update Source
              */
+
             for (int src = 0; src < config.sources.size(); ++src)
             {
-                double amp = config.sources[src][5];
-                double freq = config.sources[src][6];
-                double phase = config.sources[src][7];
-                double duration = config.sources[src][8];
-                if (t < duration)
-                    for (int n = 0; n < srcIndices[src].size(); ++n)
-                        u[0][srcIndices[src][n]] = amp * sin(2 * M_PI * freq * t + phase);
+                if (config.sources[src].formula == "")
+                {
+                    double amp = config.sources[src].source[5];
+                    double freq = config.sources[src].source[6];
+                    double phase = config.sources[src].source[7];
+                    double duration = config.sources[src].source[8];
+                    if (t < duration)
+                        for (int n = 0; n < srcIndices[src].size(); ++n)
+                            u[0][srcIndices[src][n]] = amp * sin(2 * M_PI * freq * t + phase);
+                }
+                else
+                {
+                    double duration = config.sources[src].source[5];
+                    if (t < duration)
+                        for (int n = 0; n < srcIndices[src].size(); ++n)
+                            u[0][srcIndices[src][n]] = config.sources[src].value(t);
+                }
             }
 
             /**
@@ -177,28 +189,30 @@ namespace solver
                 for (int n = 0; n < mesh.getElNumNodes(); ++n)
                 {
                     int elN = el * elNumNodes + n;
-#pragma omp atomic
+#pragma omp atomic update
                     residual[0] += pow(g_p[el][n] - u[0][elN], 2);
-#pragma omp atomic
+#pragma omp atomic update
                     residual[1] += pow(g_rho[el][n] - u[0][elN] / (config.c0 * config.c0), 2);
-#pragma omp atomic
+#pragma omp atomic update
                     residual[2] += pow(g_v[el][3 * n + 0] - u[1][elN], 2);
-#pragma omp atomic
+#pragma omp atomic update
                     residual[3] += pow(g_v[el][3 * n + 1] - u[2][elN], 2);
-#pragma omp atomic
+#pragma omp atomic update
                     residual[4] += pow(g_v[el][3 * n + 2] - u[3][elN], 2);
                 }
             }
             outfile << t << ";";
             std::cout << std::scientific << t << "\t";
+            auto end_time = std::chrono::system_clock::now();
+            auto elapsed_time = std::chrono::duration_cast<std::chrono::microseconds>(end_time - start_time);
             for (int eq = 0; eq < residual.size(); ++eq)
             {
                 residual[eq] /= (mesh.getElNum() * mesh.getElNumNodes());
                 std::cout << std::scientific << residual[eq] << "\t";
                 outfile << residual[eq] << ";";
             }
-            std::cout << std::endl;
-            outfile << std::endl;
+            std::cout << elapsed_time.count() * 1.0e-6 << " s" << std::endl;
+            outfile << elapsed_time.count() * 1.0e-6 << std::endl;
         }
 
         /** Save to file */
@@ -253,10 +267,10 @@ namespace solver
                 std::vector<double> coord, paramCoord;
                 int _dim, _tag;
                 gmsh::model::mesh::getNode(mesh.getElNodeTags()[n], coord, paramCoord, _dim, _tag);
-                if (pow(coord[0] - config.sources[i][1], 2) +
-                        pow(coord[1] - config.sources[i][2], 2) +
-                        pow(coord[2] - config.sources[i][3], 2) <
-                    pow(config.sources[i][4], 2))
+                if (pow(coord[0] - config.sources[i].source[1], 2) +
+                        pow(coord[1] - config.sources[i].source[2], 2) +
+                        pow(coord[2] - config.sources[i].source[3], 2) <
+                    pow(config.sources[i].source[4], 2))
                 {
                     indice.push_back(n);
                 }
@@ -269,11 +283,12 @@ namespace solver
          */
 
         std::ofstream outfile("residuals.txt");
-        outfile << "time;log(res_p);log(res_rho);log(res_vx);log(res_vy);log(res_vz)" << std::endl;
+        outfile << "time;log(res_p);log(res_rho);log(res_vx);log(res_vy);log(res_vz);elapsed_time(s)" << std::endl;
         auto start = std::chrono::system_clock::now();
         for (double t = config.timeStart, step = 0, tDisplay = 0; t <= config.timeEnd;
              t += config.timeStep, tDisplay += config.timeStep, ++step)
         {
+            auto start_time = std::chrono::system_clock::now();
             std::vector<double> residual(5, 0.0);
             /**
              *  Savings and prints
@@ -305,23 +320,33 @@ namespace solver
                 auto end = std::chrono::system_clock::now();
                 auto elapsed = std::chrono::duration_cast<std::chrono::seconds>(end - start);
                 gmsh::logger::write("[" + std::to_string(t) + "/" + std::to_string(config.timeEnd) + "s] Step number : " + std::to_string((int)step) + ", Elapsed time: " + std::to_string(elapsed.count()) + "s");
-                screen_display::write_string("time\t\tres_p\t\tres_rho\t\tres_vx\t\tres_vy\t\tres_vz", BOLDBLUE);
+                screen_display::write_string("time\t\tres_p\t\tres_rho\t\tres_vx\t\tres_vy\t\tres_vz\t\telapsed time", BOLDBLUE);
                 // mesh.writeVTK("result.vtk");
                 std::string vtu_filename = "results/result" + std::to_string((int)step) + ".vtu";
-                mesh.writeVTU(vtu_filename, u);
+                mesh.writeVTUb(vtu_filename, u);
                 // mesh.writeVTK("result.vtk",u);
             }
 
             /** Source */
             for (int src = 0; src < config.sources.size(); ++src)
             {
-                double amp = config.sources[src][5];
-                double freq = config.sources[src][6];
-                double phase = config.sources[src][7];
-                double duration = config.sources[src][8];
-                if (t < duration)
-                    for (int n = 0; n < srcIndices[src].size(); ++n)
-                        u[0][srcIndices[src][n]] = amp * sin(2 * M_PI * freq * t + phase);
+                if (config.sources[src].formula == "")
+                {
+                    double amp = config.sources[src].source[5];
+                    double freq = config.sources[src].source[6];
+                    double phase = config.sources[src].source[7];
+                    double duration = config.sources[src].source[8];
+                    if (t < duration)
+                        for (int n = 0; n < srcIndices[src].size(); ++n)
+                            u[0][srcIndices[src][n]] = amp * sin(2 * M_PI * freq * t + phase);
+                }
+                else
+                {
+                    double duration = config.sources[src].source[5];
+                    if (t < duration)
+                        for (int n = 0; n < srcIndices[src].size(); ++n)
+                            u[0][srcIndices[src][n]] = config.sources[src].value(t);
+                }        
             }
 
             /**
@@ -363,28 +388,30 @@ namespace solver
                 for (int n = 0; n < mesh.getElNumNodes(); ++n)
                 {
                     int elN = el * elNumNodes + n;
-#pragma omp atomic
+#pragma omp atomic update
                     residual[0] += pow(g_p[el][n] - u[0][elN], 2);
-#pragma omp atomic
+#pragma omp atomic update
                     residual[1] += pow(g_rho[el][n] - u[0][elN] / (config.c0 * config.c0), 2);
-#pragma omp atomic
+#pragma omp atomic update
                     residual[2] += pow(g_v[el][3 * n + 0] - u[1][elN], 2);
-#pragma omp atomic
+#pragma omp atomic update
                     residual[3] += pow(g_v[el][3 * n + 1] - u[2][elN], 2);
-#pragma omp atomic
+#pragma omp atomic update
                     residual[4] += pow(g_v[el][3 * n + 2] - u[3][elN], 2);
                 }
             }
             outfile << t << ";";
             std::cout << std::scientific << t << "\t";
+            auto end_time = std::chrono::system_clock::now();
+            auto elapsed_time = std::chrono::duration_cast<std::chrono::microseconds>(end_time - start_time);
             for (int eq = 0; eq < residual.size(); ++eq)
             {
                 residual[eq] /= (mesh.getElNum() * mesh.getElNumNodes());
                 std::cout << std::scientific << residual[eq] << "\t";
                 outfile << log(residual[eq]) << ";";
             }
-            std::cout << std::endl;
-            outfile << std::endl;
+            std::cout << elapsed_time.count() * 1.0e-6 << " s" << std::endl;
+            outfile << elapsed_time.count() * 1.0e-6 << std::endl;
         }
 
         outfile.close();

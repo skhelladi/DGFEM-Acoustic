@@ -1,0 +1,27 @@
+[
+{
+  "directory": "/home/khelladi/Codes/Code_P2C2/TurboKit-CAA/DGFEM-Acoustic_github/build",
+  "command": "/usr/bin/g++ -D_GLIBCXX_USE_CXX11_ABI=1 -I/home/khelladi/Codes/Code_P2C2/TurboKit-CAA/DGFEM-Acoustic_github/3rdParty/gmsh/include -I/home/khelladi/Codes/Code_P2C2/TurboKit-CAA/DGFEM-Acoustic_github/3rdParty/eigen -I/home/khelladi/Codes/Code_P2C2/TurboKit-CAA/DGFEM-Acoustic_github/include  -fopenmp -O3 -DNDEBUG -std=gnu++17 -o src/CMakeFiles/dgalerkin.dir/dgalerkin.cpp.o -c /home/khelladi/Codes/Code_P2C2/TurboKit-CAA/DGFEM-Acoustic_github/src/dgalerkin.cpp",
+  "file": "/home/khelladi/Codes/Code_P2C2/TurboKit-CAA/DGFEM-Acoustic_github/src/dgalerkin.cpp"
+},
+{
+  "directory": "/home/khelladi/Codes/Code_P2C2/TurboKit-CAA/DGFEM-Acoustic_github/build",
+  "command": "/usr/bin/g++ -D_GLIBCXX_USE_CXX11_ABI=1 -I/home/khelladi/Codes/Code_P2C2/TurboKit-CAA/DGFEM-Acoustic_github/3rdParty/gmsh/include -I/home/khelladi/Codes/Code_P2C2/TurboKit-CAA/DGFEM-Acoustic_github/3rdParty/eigen -I/home/khelladi/Codes/Code_P2C2/TurboKit-CAA/DGFEM-Acoustic_github/include  -fopenmp -O3 -DNDEBUG -std=gnu++17 -o src/CMakeFiles/dgalerkin.dir/configParser.cpp.o -c /home/khelladi/Codes/Code_P2C2/TurboKit-CAA/DGFEM-Acoustic_github/src/configParser.cpp",
+  "file": "/home/khelladi/Codes/Code_P2C2/TurboKit-CAA/DGFEM-Acoustic_github/src/configParser.cpp"
+},
+{
+  "directory": "/home/khelladi/Codes/Code_P2C2/TurboKit-CAA/DGFEM-Acoustic_github/build",
+  "command": "/usr/bin/g++ -D_GLIBCXX_USE_CXX11_ABI=1 -I/home/khelladi/Codes/Code_P2C2/TurboKit-CAA/DGFEM-Acoustic_github/3rdParty/gmsh/include -I/home/khelladi/Codes/Code_P2C2/TurboKit-CAA/DGFEM-Acoustic_github/3rdParty/eigen -I/home/khelladi/Codes/Code_P2C2/TurboKit-CAA/DGFEM-Acoustic_github/include  -fopenmp -O3 -DNDEBUG -std=gnu++17 -o src/CMakeFiles/dgalerkin.dir/Mesh.cpp.o -c /home/khelladi/Codes/Code_P2C2/TurboKit-CAA/DGFEM-Acoustic_github/src/Mesh.cpp",
+  "file": "/home/khelladi/Codes/Code_P2C2/TurboKit-CAA/DGFEM-Acoustic_github/src/Mesh.cpp"
+},
+{
+  "directory": "/home/khelladi/Codes/Code_P2C2/TurboKit-CAA/DGFEM-Acoustic_github/build",
+  "command": "/usr/bin/g++ -D_GLIBCXX_USE_CXX11_ABI=1 -I/home/khelladi/Codes/Code_P2C2/TurboKit-CAA/DGFEM-Acoustic_github/3rdParty/gmsh/include -I/home/khelladi/Codes/Code_P2C2/TurboKit-CAA/DGFEM-Acoustic_github/3rdParty/eigen -I/home/khelladi/Codes/Code_P2C2/TurboKit-CAA/DGFEM-Acoustic_github/include  -fopenmp -O3 -DNDEBUG -std=gnu++17 -o src/CMakeFiles/dgalerkin.dir/utils.cpp.o -c /home/khelladi/Codes/Code_P2C2/TurboKit-CAA/DGFEM-Acoustic_github/src/utils.cpp",
+  "file": "/home/khelladi/Codes/Code_P2C2/TurboKit-CAA/DGFEM-Acoustic_github/src/utils.cpp"
+},
+{
+  "directory": "/home/khelladi/Codes/Code_P2C2/TurboKit-CAA/DGFEM-Acoustic_github/build",
+  "command": "/usr/bin/g++ -D_GLIBCXX_USE_CXX11_ABI=1 -I/home/khelladi/Codes/Code_P2C2/TurboKit-CAA/DGFEM-Acoustic_github/3rdParty/gmsh/include -I/home/khelladi/Codes/Code_P2C2/TurboKit-CAA/DGFEM-Acoustic_github/3rdParty/eigen -I/home/khelladi/Codes/Code_P2C2/TurboKit-CAA/DGFEM-Acoustic_github/include  -fopenmp -O3 -DNDEBUG -std=gnu++17 -o src/CMakeFiles/dgalerkin.dir/solver.cpp.o -c /home/khelladi/Codes/Code_P2C2/TurboKit-CAA/DGFEM-Acoustic_github/src/solver.cpp",
+  "file": "/home/khelladi/Codes/Code_P2C2/TurboKit-CAA/DGFEM-Acoustic_github/src/solver.cpp"
+}
+]

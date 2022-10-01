@@ -31,8 +31,8 @@
 #define TRI 2
 #define TETRA 4
 
-#define VTK_TRI 5
-#define VTK_TETRA 10
+// #define VTK_TRI 5
+// #define VTK_TETRA 10
 
 //////////////////////////////////////////////////////////////
 // using namespace std;

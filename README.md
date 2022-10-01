@@ -1,7 +1,7 @@
 # DGFEM for Acoustic Wave Propagation 
 
-[![version](https://img.shields.io/badge/version-1.3.3-red)](https://github.com/skhelladi/DGFEM-CAA/releases/tag/v1.3.3) 
-[![compilers](https://img.shields.io/badge/c++-17%20|%2020-27ae60.svg)](https://github.com/skhelladi/DGFEM-CAA/releases/tag/v1.3.3) 
+[![version](https://img.shields.io/badge/version-1.3.4-red)](https://github.com/skhelladi/DGFEM-CAA/releases/tag/v1.3.4) 
+[![compilers](https://img.shields.io/badge/c++-17%20|%2020-27ae60.svg)](https://github.com/skhelladi/DGFEM-CAA/releases/tag/v1.3.4) 
 
 This repository implements a discontinuous Galerkin finite element method (DGFEM) applied to the linearized Euler equations and the acoustic 
 perturbation equations. 
@@ -32,6 +32,7 @@ Lapack
 Blas
 OpenMP
 Libtbb
+VTK
 ```
 
 ### Installing
@@ -76,11 +77,12 @@ sh run_caa
 ```
 
 
-## Authors
+## Author
+* Sofiane Khelladi
 
+## Forked from code developed by
 * Pierre-Olivier Vanberg
 * Martin Lacroix
 * Tom Servais
+Link : https://github.com/pvanberg/DGFEM-Acoustic
 
-## Contributors
-* Sofiane Khelladi

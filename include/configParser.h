@@ -1,11 +1,30 @@
 #include <fstream>
 #include <map>
 #include <string>
+#include "eqEdit.h"
 
 #ifndef DGALERKIN_CONFIG_H
 #define DGALERKIN_CONFIG_H
 
 //! ////////////////////////////////////////////////////////////////
+class Sources
+{
+public:
+    Sources(std::string f, std::vector<double> s)
+    {
+        formula = f;
+        source = s;
+    }
+    Sources() {}
+    std::string formula = "";
+    std::vector<double> source;
+    EQ_EDIT expression;
+    double value(double t)
+    {
+        return expression.value(true,formula,{{"t",t}});
+    }
+};
+
 struct Config
 {
     // Initial, final time and time step(t>0)
@@ -34,8 +53,12 @@ struct Config
     int numThreads = 1;
 
     // Sources
-    std::vector<std::vector<double>> sources;
-
+    // struct sources
+    // {
+    //     std::vector<std::vector<double>> source;
+    //     std::string source_expression = "";
+    // };
+    std::vector<Sources> sources;
     // Initial conditions
     std::vector<std::vector<double>> initConditions;
 

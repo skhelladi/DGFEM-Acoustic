@@ -170,7 +170,6 @@ Mesh::Mesh(std::string name, Config config) : name(name), config(config)
 
     m_fType = gmsh::model::mesh::getElementType(m_fName, m_elOrder);
 
-
     /**
      * [1] Get Faces for all elements
      */
@@ -227,9 +226,9 @@ Mesh::Mesh(std::string name, Config config) : name(name), config(config)
     m_fIntType = m_elIntType;
 
     gmsh::model::mesh::getBasisFunctions(m_fType, m_fIntParamCoords, config.elementType, *new int, m_fBasisFcts, _numOrientations);
-  
+
     gmsh::model::mesh::getBasisFunctions(m_fType, m_fIntParamCoords, "Grad" + config.elementType, *new int, m_fUGradBasisFcts, _numOrientations);
-   
+
     gmsh::model::mesh::getJacobians(m_fType, m_fIntParamCoords, m_fJacobians, m_fJacobianDets, m_fIntPtCoords, m_fEntity);
 
     m_fNumIntPts = (int)m_fJacobianDets.size() / m_fNum;
@@ -314,10 +313,8 @@ Mesh::Mesh(std::string name, Config config) : name(name), config(config)
         }
     }
 
-
     if (m_elDim == 3 && m_elOrder != 1)
         fc = -1;
-
 
     screen_display::write_if_false(m_elFNodeTags.size() == m_elNum * m_fNumPerEl * m_fNumNodes, "m_elFNodeTags size error");
     screen_display::write_if_false(m_fJacobianDets.size() == m_fNum * m_fNumIntPts, "m_fJacobianDets size error");
@@ -424,10 +421,8 @@ Mesh::Mesh(std::string name, Config config) : name(name), config(config)
 
             size_t value = (dotProduct >= 0) ? 1 : -1;
             m_elFOrientation.push_back(value);
-
         }
     }
-
 
     end = std::chrono::system_clock::now();
     elapsed = std::chrono::duration_cast<std::chrono::microseconds>(end - start);
@@ -615,7 +610,6 @@ Mesh::Mesh(std::string name, Config config) : name(name), config(config)
     end = std::chrono::system_clock::now();
     elapsed = std::chrono::duration_cast<std::chrono::microseconds>(end - start);
     screen_display::write_value("Elapsed time:", elapsed.count() * 1.0e-6, "s", BLUE);
-
 }
 
 /**
@@ -723,8 +717,8 @@ void Mesh::precomputeFlux(std::vector<double> &u, std::vector<std::vector<double
                     {
                         for (int x = 0; x < m_Dim; ++x)
                             Fnum[x] = 0.5 * ((Flux[elUp][x] + Flux[elDn][x]) + fc * config.c0 * fNormal(f, g, x) * (u[elUp] - u[elDn]));
-                        /////////////////////////
-                        // #pragma omp atomic
+/////////////////////////
+#pragma omp atomic update
                         FIntPts[g] += eigen::dot(&fNormal(f, g), Fnum.data(), m_Dim) * fBasisFct(g, i);
                     }
                 }
@@ -736,8 +730,8 @@ void Mesh::precomputeFlux(std::vector<double> &u, std::vector<std::vector<double
                 fFlux(f, n) = 0;
                 for (int g = 0; g < m_fNumIntPts; ++g)
                 {
-                    ////////////////////////
-                    // #pragma omp atomic
+////////////////////////
+#pragma omp atomic update
                     fFlux(f, n) += m_fWeight[g] * fBasisFct(g, n) * FIntPts[g] * fJacobianDet(f, g);
                 }
             }
@@ -756,14 +750,15 @@ void Mesh::getElFlux(const size_t el, double *F)
 {
     int i;
     std::fill(F, F + m_elNumNodes, 0);
-#pragma omp parallel num_threads(config.numThreads)
+    // #pragma omp parallel num_threads(config.numThreads)
     {
-#pragma omp parallel for schedule(static)
+        // #pragma omp parallel for schedule(static)
         for (int f = 0; f < m_fNumPerEl; ++f)
         {
             el == fNbrElId(elFId(el, f), 0) ? i = 0 : i = 1;
             for (int nf = 0; nf < m_fNumNodes; ++nf)
             {
+                // #pragma omp atomic
                 F[fNToElNId(elFId(el, f), nf, i)] += elFOrientation(el, f) * fFlux(elFId(el, f), nf);
             }
         }
@@ -785,7 +780,7 @@ void Mesh::updateFlux(std::vector<std::vector<double>> &u, std::vector<std::vect
 {
 
 // #pragma omp parallel for
-#pragma omp parallel for schedule(static) num_threads(config.numThreads) // firstprivate(elFlux, elStiffvector)
+#pragma omp parallel for schedule(static) num_threads(config.numThreads)
     for (size_t el = 0; el < m_elNum; ++el)
     {
         for (int n = 0; n < m_elNumNodes; ++n)
@@ -829,14 +824,14 @@ void Mesh::updateFlux(std::vector<std::vector<double>> &u, std::vector<std::vect
                     for (int n = 0; n < m_fNumNodes; ++n)
                     {
                         int nId = el * m_elNumNodes + fNToElNId(fId, n, 0);
-                        ////////////////////////
-                        // #pragma omp atomic
+////////////////////////
+#pragma omp atomic
                         uGhost[0][gId] += u[0][nId] * fBasisFct(g, n);
-                        // #pragma omp atomic
+#pragma omp atomic
                         uGhost[1][gId] += u[1][nId] * fBasisFct(g, n);
-                        // #pragma omp atomic
+#pragma omp atomic
                         uGhost[2][gId] += u[2][nId] * fBasisFct(g, n);
-                        // #pragma omp atomic
+#pragma omp atomic
                         uGhost[3][gId] += u[3][nId] * fBasisFct(g, n);
                     }
 
@@ -847,12 +842,12 @@ void Mesh::updateFlux(std::vector<std::vector<double>> &u, std::vector<std::vect
                                      fNormal(fId, g, 1) * uGhost[2][gId] +
                                      fNormal(fId, g, 2) * uGhost[3][gId];
 
-                        // Remove normal component (Rigid Wall BC)
-                        // #pragma omp atomic
+// Remove normal component (Rigid Wall BC)
+#pragma omp atomic
                         uGhost[1][gId] -= dot * fNormal(fId, g, 0);
-                        // #pragma omp atomic
+#pragma omp atomic
                         uGhost[2][gId] -= dot * fNormal(fId, g, 1);
-                        // #pragma omp atomic
+#pragma omp atomic
                         uGhost[3][gId] -= dot * fNormal(fId, g, 2);
 
                         // Flux at integration points
@@ -1031,7 +1026,7 @@ void Mesh::getConnectivityFaceToElement()
     std::vector<std::vector<size_t>> m_fNodeTagsOrdered_tab = vector_to_matrix(m_fNodeTagsOrdered, m_fNumNodes);
 
     std::vector<size_t> elFtags = vector_of_tags(m_elFNodeTagsOrdered_tab.size(), m_fNumPerEl); //! vector of elements face tags
-    std::vector<size_t> ftags = vector_of_tags(m_fNodeTagsOrdered_tab.size(), 1); //! vector of face tags
+    std::vector<size_t> ftags = vector_of_tags(m_fNodeTagsOrdered_tab.size(), 1);               //! vector of face tags
 
     for (size_t i = 0; i < m_elFNodeTagsOrdered_tab.size(); i++)
     {
@@ -1052,7 +1047,6 @@ void Mesh::getConnectivityFaceToElement()
         }
     }
 
-   
     //! TIMER END ///////////////////////////////////////////////////////////////////
     auto end = std::chrono::system_clock::now();
     auto elapsed = std::chrono::duration_cast<std::chrono::microseconds>(end - start);
@@ -1064,8 +1058,11 @@ void Mesh::getConnectivityFaceToElement()
  * @brief Write VTK & PVD
  * Added by Sofiane KHELLADI in 11/03/2022
  */
-void Mesh::writeVTU(std::string filename, std::vector<std::vector<double>> &u)
+
+
+void Mesh::writeVTUb(std::string filename, std::vector<std::vector<double>> &u)
 {
+    // std::string filename = filename;
     screen_display::write_string("Write VTU at " + filename, BOLDRED);
 
     size_t eltype;
@@ -1078,144 +1075,89 @@ void Mesh::writeVTU(std::string filename, std::vector<std::vector<double>> &u)
 
     size_t elNumNodes = (m_elDim == 2) ? 3 : 4; //! 3 points: triangle , 4 points : tetrahedral
 
-    std::ofstream file;
-    file.open((filename).c_str(), std::ios::out);
-    file << "<?xml version=\"1.0\"?>" << std::endl;
-    file << "<VTKFile type=\"UnstructuredGrid\">" << std::endl;
-    file << "<UnstructuredGrid>" << std::endl;
-    file << "<Piece NumberOfPoints=\"" << node_tag.size() << "\" NumberOfCells=\"" << getElNum() << "\">" << std::endl;
+    vtkNew<vtkPoints> points;
+
+    vtkNew<vtkCellArray> cellArray;
+    vtkNew<vtkDoubleArray> pressure, density, velocity;
+    vtkNew<vtkUnstructuredGrid> unstructuredGrid;
+    vtkNew<vtkXMLUnstructuredGridWriter> writer;
+
+    for (auto n : node_tag)
     {
-        file << "<Points>" << std::endl;
-        {
-            file << "<DataArray NumberOfComponents=\"3\" type=\"Float64\" format=\"ascii\" >" << std::endl;
-            for (auto n : node_tag)
-            {
-                std::vector<double> coord, paramCoord;
-                int _dim, _tag;
-                gmsh::model::mesh::getNode(n, coord, paramCoord, _dim, _tag);
-                file << std::setw(32) << std::setprecision(16) << std::scientific << coord[0];
-                file << std::setw(32) << std::setprecision(16) << std::scientific << coord[1];
-                file << std::setw(32) << std::setprecision(16) << std::scientific << coord[2] << std::endl;
-            }
-
-            file << "</DataArray>" << std::endl;
-        }
-        file << "</Points>" << std::endl;
-
-        file << "<Cells>" << std::endl;
-        {
-            file << "<DataArray Name=\"connectivity\" type=\"Int64\" format=\"ascii\" >" << std::endl;
-
-            for (size_t i = 0; i < getElNum(); i++)
-            {
-                for (size_t j = 0; j < elNumNodes; j++) /*getElNumNodes()*/
-                {
-                    file << elNodeTag(i, j) - 1 << "\t";
-                }
-                file << std::endl;
-            }
-
-            file << "</DataArray>" << std::endl;
-            file << "<DataArray Name=\"offsets\" type=\"Int64\" format=\"ascii\" >" << std::endl;
-
-            size_t offset = 0;
-            for (size_t i = 0; i < getElNum(); i++)
-            {
-                offset += elNumNodes;
-                file << offset << std::endl;
-            }
-
-            file << "</DataArray>" << std::endl;
-            file << "<DataArray Name=\"types\" type=\"UInt8\" format=\"ascii\" >" << std::endl;
-
-            for (size_t i = 0; i < getElNum(); i++)
-            {
-
-                if (m_elName.find("Triangle") != std::string::npos)
-                    file << VTK_TRI << std::endl;
-
-                if (m_elName.find("Tetrahedron") != std::string::npos)
-                    file << VTK_TETRA << std::endl;
-            }
-            file << "</DataArray>" << std::endl;
-        }
-        file << "</Cells>" << std::endl;
-
-        file << "<CellData Scalars=\"scalars\" Vectors=\"Velocity\">" << std::endl; // PointData
-        {
-            file << "<DataArray Name=\""
-                 << "Pressure"
-                 << "\"";
-            file << " type=\"Float32\" format=\"ascii\" >" << std::endl;
-
-            for (size_t el = 0; el < getElNum(); ++el)
-            {
-                double pressure = 0;
-                for (size_t n = 0; n < getElNumNodes(); ++n)
-                {
-                    size_t elN = el * getElNumNodes() + n;
-                    pressure += u[0][elN];
-                }
-
-                file << pressure / getElNumNodes() << std::endl;
-            }
-
-            file << "</DataArray>" << std::endl;
-
-            file << "<DataArray Name=\""
-                 << "Density"
-                 << "\"";
-            file << " type=\"Float32\" format=\"ascii\" >" << std::endl;
-
-            // for (auto i : node_tag)
-            //  {
-            //      file << u[0][i - 1] / (config.c0 * config.c0) << std::endl;
-            //  }
-            for (size_t el = 0; el < getElNum(); ++el)
-            {
-                double density = 0;
-                for (size_t n = 0; n < getElNumNodes(); ++n)
-                {
-                    size_t elN = el * getElNumNodes() + n;
-                    density += u[0][elN] / (config.c0 * config.c0);
-                }
-
-                file << density / getElNumNodes() << std::endl;
-            }
-
-            file << "</DataArray>" << std::endl;
-
-            file << "<DataArray NumberOfComponents=\"3\" Name=\""
-                 << "Velocity"
-                 << "\"";
-            file << " type=\"Float32\" format=\"ascii\" >" << std::endl;
-
-            // for (auto i : node_tag)
-            //  {
-            //      file << u[0][i - 1] / (config.c0 * config.c0) << std::endl;
-            //  }
-            for (size_t el = 0; el < getElNum(); ++el)
-            {
-                double vx = 0.0, vy = 0.0, vz = 0.0;
-                for (size_t n = 0; n < getElNumNodes(); ++n)
-                {
-                    size_t elN = el * getElNumNodes() + n;
-                    vx += u[1][elN];
-                    vy += u[2][elN];
-                    vz += u[3][elN];
-                }
-
-                file << vx / getElNumNodes() << " " << vy / getElNumNodes() << " " << vz / getElNumNodes() << std::endl;
-            }
-
-            file << "</DataArray>" << std::endl;
-        }
-        file << "</CellData>" << std::endl;
+        std::vector<double> coord, paramCoord;
+        int _dim, _tag;
+        gmsh::model::mesh::getNode(n, coord, paramCoord, _dim, _tag);
+        points->InsertNextPoint(coord[0], coord[1], coord[2]);
     }
-    file << "</Piece>" << std::endl;
-    file << "</UnstructuredGrid>" << std::endl;
-    file << "</VTKFile>" << std::endl;
-    file.close();
+
+    for (size_t i = 0; i < getElNum(); i++)
+    {
+        vtkNew<vtkTetra> tetra;
+        vtkNew<vtkTriangle> tri;
+        for (size_t j = 0; j < elNumNodes; j++) /*getElNumNodes()*/
+        {
+            if (m_elDim == 3)
+                tetra->GetPointIds()->SetId(j, elNodeTag(i, j) - 1);
+            else
+                tri->GetPointIds()->SetId(j, elNodeTag(i, j) - 1);
+        }
+
+        if (m_elDim == 3)
+            cellArray->InsertNextCell(tetra);
+        else
+            cellArray->InsertNextCell(tri);
+    }
+
+    pressure->SetName("Pressure [Pa]");
+    density->SetName("Density [kg/m³]");
+    velocity->SetName("Velocity [m/s]");
+    velocity->SetNumberOfComponents(3);
+
+    std::vector<size_t> nb_occurence(node_tag.size(),1);
+    std::vector<double> pressure_vec(node_tag.size(),0.0);
+    std::vector<double> density_vec(node_tag.size(),0.0);
+    std::vector<double> vel_x_vec(node_tag.size(),0.0);
+    std::vector<double> vel_y_vec(node_tag.size(),0.0);
+    std::vector<double> vel_z_vec(node_tag.size(),0.0);
+
+    for (size_t el = 0; el < getElNum(); ++el)
+    {
+        double p(0.0), rho(0.0), vx(0.0), vy(0.0), vz(0.0);
+        for (size_t n = 0; n < getElNumNodes(); ++n)
+        {
+            size_t elN = el * getElNumNodes() + n;
+            p += u[0][elN];
+            rho += u[0][elN] / (config.c0 * config.c0);
+            vx += u[1][elN];
+            vy += u[2][elN];
+            vz += u[3][elN];
+        }
+        double V[] = {vx / getElNumNodes(), vy / getElNumNodes(), vz / getElNumNodes()};
+        pressure->InsertNextValue(p / getElNumNodes());
+        density->InsertNextValue(rho / getElNumNodes());
+        velocity->InsertNextTuple(V);
+    }
+
+
+    unstructuredGrid->SetPoints(points);
+
+    if (m_elDim == 3)
+        unstructuredGrid->SetCells(VTK_TETRA, cellArray);
+    else
+        unstructuredGrid->SetCells(VTK_TRIANGLE, cellArray);
+
+    unstructuredGrid->GetCellData()->AddArray(pressure);
+    unstructuredGrid->GetCellData()->AddArray(density);
+    unstructuredGrid->GetCellData()->AddArray(velocity);
+    // unstructuredGrid->GetPointData()->AddArray(pressure);
+    // unstructuredGrid->GetPointData()->AddArray(density);
+    // unstructuredGrid->GetPointData()->AddArray(velocity);
+
+    // Write file
+
+    writer->SetFileName(filename.c_str());
+    writer->SetInputData(unstructuredGrid);
+    writer->Write();
 }
 
 void Mesh::writePVD(std::string filename)

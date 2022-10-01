@@ -79,6 +79,15 @@ else
 	echo "libxft2 installed.";
 fi
 
+dpkg -s libvtk9-dev > /dev/null 2>&1;
+if [ $? -eq 0 ]; then
+	echo "libvtk9-dev found.";
+else
+	echo "libvtk9-dev not found, installing...";
+	sudo apt-get -y install libvtk9-dev;
+	echo "libvtk9-dev installed.";
+fi
+
 if [ ! -d "3rdParty/gmsh" ]; then
 	echo "Gmsh not found, installing...";
 	wget http://gmsh.info/bin/Linux/gmsh-4.10.5-Linux64-sdk.tgz
