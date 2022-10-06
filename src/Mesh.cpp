@@ -266,12 +266,46 @@ Mesh::Mesh(std::string name, Config config) : name(name), config(config)
      * Define a normal associated to each surface.
      */
 
-    screen_display::write_string("Define a normal associated to each surface.", GREEN);
+    screen_display::write_string("Define a normal/tangent/bitangent (1D and 2D only, 3D in progress) associated to each surface.", GREEN);
     start = std::chrono::system_clock::now();
     std::vector<double> normal(m_Dim);
+    std::vector<double> tangent(m_Dim);
+    std::vector<double> bitangent(m_Dim);
     // #pragma omp parallel for
     for (int f = 0; f < m_fNum; ++f)
     {
+        // TODO: compute here tangent and bitangent for 3D cases
+        std::vector<double> p1 = {fIntPtCoord(f, 0, 0), fIntPtCoord(f, 0, 1), fIntPtCoord(f, 0, 2)};
+        std::vector<double> p2 = {fIntPtCoord(f, 1, 0), fIntPtCoord(f, 1, 1), fIntPtCoord(f, 1, 2)};
+        std::vector<double> p3 = {fIntPtCoord(f, 2, 0), fIntPtCoord(f, 2, 1), fIntPtCoord(f, 2, 2)};
+
+        double h = sqrt(pow(p2[0]-p1[0],2)+pow(p2[1]-p1[1],2)+pow(p2[2]-p1[2],2));
+        double i = ((p2[0]-p1[0])*(p3[0]-p1[0])+(p2[1]-p1[1])*(p3[1]-p1[1])+(p2[2]-p1[2])*(p3[2]-p1[2]))/h;
+        double j = sqrt(pow(p3[0]-p1[0],2)+pow(p3[1]-p1[1],2)+pow(p3[2]-p1[2],2)-pow(i,2));
+
+        double u1(0), v1(0);
+        double u2(h), v2(0);
+        double u3(i), v3(j);
+
+        std::vector<double> T = {0, 0, 0};
+        std::vector<double> B = {0, 0, 0};
+
+        double delta = fabs(u2 - u1) * fabs(v3 - v1) - fabs(v2 - v1) * fabs(u3 - u1);
+
+        T[0] = (fabs(v3 - v1) * (p2[0] - p1[0]) - fabs(v2 - v1) * (p3[0] - p1[0])) / delta;
+        T[1] = (fabs(v3 - v1) * (p2[1] - p1[1]) - fabs(v2 - v1) * (p3[1] - p1[1])) / delta;
+        T[2] = (fabs(v3 - v1) * (p2[2] - p1[2]) - fabs(v2 - v1) * (p3[2] - p1[2])) / delta;
+
+        B[0] = -(fabs(u3 - u1) * (p2[0] - p1[0]) - fabs(u2 - u1) * (p3[0] - p1[0])) / delta;
+        B[1] = -(fabs(u3 - u1) * (p2[1] - p1[1]) - fabs(u2 - u1) * (p3[1] - p1[1])) / delta;
+        B[2] = -(fabs(u3 - u1) * (p2[2] - p1[2]) - fabs(u2 - u1) * (p3[2] - p1[2])) / delta;
+
+        // screen_display::write_value("delta", delta);
+        // screen_display::write_value("|T|", sqrt(pow(T[0], 2) + pow(T[1], 2) + pow(T[2], 2)));
+        // screen_display::write_value("|B|", sqrt(pow(B[0], 2) + pow(B[1], 2) + pow(B[2], 2)));
+        // getchar();
+
+        //! ////////////////////////////////////////////////////
         for (int g = 0; g < m_fNumIntPts; ++g)
         {
 
@@ -280,6 +314,8 @@ Mesh::Mesh(std::string name, Config config) : name(name), config(config)
             case 0:
             {
                 normal = {1, 0, 0};
+                tangent = {0, 0, 0};
+                bitangent = {0, 0, 0};
                 break;
             }
             case 1:
@@ -291,8 +327,9 @@ Mesh::Mesh(std::string name, Config config) : name(name), config(config)
                     for (int x = 0; x < m_Dim; ++x)
                         // #pragma omp atomic
                         normal[x] *= -1.0;
-                    // normal[x] = -normal[x];
                 }
+                tangent = {-normal[1], normal[0], 0};
+                bitangent = {0, 0, 0};
                 break;
             }
             case 2:
@@ -305,11 +342,18 @@ Mesh::Mesh(std::string name, Config config) : name(name), config(config)
                         normal[x] *= -1.0;
                     // normal[x] = -normal[x];
                 }
+                // FIXME: provisoire
+                tangent = {T[0], T[1], T[2]};
+                bitangent = {B[0], B[1], B[2]};
                 break;
             }
             }
             eigen::normalize(normal.data(), m_Dim);
+            eigen::normalize(tangent.data(), m_Dim);
+            eigen::normalize(bitangent.data(), m_Dim);
             m_fNormals.insert(m_fNormals.end(), normal.begin(), normal.end());
+            m_fTangents.insert(m_fTangents.end(), tangent.begin(), tangent.end());
+            m_fBiTangents.insert(m_fBiTangents.end(), bitangent.begin(), bitangent.end());
         }
     }
 
@@ -320,6 +364,8 @@ Mesh::Mesh(std::string name, Config config) : name(name), config(config)
     screen_display::write_if_false(m_fJacobianDets.size() == m_fNum * m_fNumIntPts, "m_fJacobianDets size error");
     screen_display::write_if_false(m_fBasisFcts.size() == m_fNumNodes * m_fNumIntPts, "m_fBasisFcts size error");
     screen_display::write_if_false(m_fNormals.size() == m_Dim * m_fNum * m_fNumIntPts, "m_fNormals size error");
+    screen_display::write_if_false(m_fTangents.size() == m_Dim * m_fNum * m_fNumIntPts, "m_fTangents size error");
+    screen_display::write_if_false(m_fBiTangents.size() == m_Dim * m_fNum * m_fNumIntPts, "m_fBiTangents size error");
 
     end = std::chrono::system_clock::now();
     elapsed = std::chrono::duration_cast<std::chrono::microseconds>(end - start);
@@ -494,10 +540,16 @@ Mesh::Mesh(std::string name, Config config) : name(name), config(config)
                     {
                         // #pragma omp atomic
                         fNormal(f, g, 0) *= elFOrientation(fNbrElId(f, 0), lf);
+                        // fTangent(f, g, 0) *= elFOrientation(fNbrElId(f, 0), lf);
+                        // fBiTangent(f, g, 0) *= elFOrientation(fNbrElId(f, 0), lf);
                         // #pragma omp atomic
                         fNormal(f, g, 1) *= elFOrientation(fNbrElId(f, 0), lf);
+                        // fTangent(f, g, 1) *= elFOrientation(fNbrElId(f, 0), lf);
+                        // fBiTangent(f, g, 1) *= elFOrientation(fNbrElId(f, 0), lf);
                         // #pragma omp atomic
                         fNormal(f, g, 2) *= elFOrientation(fNbrElId(f, 0), lf);
+                        // fTangent(f, g, 2) *= elFOrientation(fNbrElId(f, 0), lf);
+                        // fBiTangent(f, g, 2) *= elFOrientation(fNbrElId(f, 0), lf);
                     }
                     elFOrientation(fNbrElId(f, 0), lf) = 1;
                 }
@@ -568,26 +620,60 @@ Mesh::Mesh(std::string name, Config config) : name(name), config(config)
             for (int g = 0; g < m_fNumIntPts; ++g)
             {
                 int i = f * m_fNumIntPts + g;
+                double nx(fNormal(f, g, 0)), ny(fNormal(f, g, 1)), nz(fNormal(f, g, 2));
+                double tx(fTangent(f, g, 0)), ty(fTangent(f, g, 1)), tz(fTangent(f, g, 2));
+                double sx(fBiTangent(f, g, 0)), sy(fBiTangent(f, g, 1)), sz(fBiTangent(f, g, 2));
+                double c0(config.c0), rho0(config.rho0);
+                double vx0(config.v0[0]), vy0(config.v0[1]), vz0(config.v0[2]);
+                double vn0 = vx0 * nx + vy0 * ny + vz0 * nz;
+                double lambda = (vn0 < 0) ? 0 : -1; // FIXME: Warning: lambda=-1 and not 1, this work but there is probably a bug in the code (physics formulation)...
+
+                // double L1(fabs(vn0-c0)), L2(fabs(vn0+c0)), L3(fabs(vn0-c0));
+
+                // screen_display::write_value("lambda",lambda);
+                // getchar();
+
                 RKR[i].resize(16);
-                RKR[i][0] = 0.25 * config.c0;
-                RKR[i][1] = 0.25 * config.c0 * config.c0 * config.rho0 * fNormal(f, g, 0);
-                RKR[i][2] = 0.25 * config.c0 * config.c0 * config.rho0 * fNormal(f, g, 1);
-                RKR[i][3] = 0.25 * config.c0 * config.c0 * config.rho0 * fNormal(f, g, 2);
 
-                RKR[i][4] = 0.25 * fNormal(f, g, 0) / config.rho0;
-                RKR[i][5] = 0.25 * config.c0 * fNormal(f, g, 0) * fNormal(f, g, 0);
-                RKR[i][6] = 0.25 * config.c0 * fNormal(f, g, 0) * fNormal(f, g, 1);
-                RKR[i][7] = 0.25 * config.c0 * fNormal(f, g, 0) * fNormal(f, g, 2);
+                RKR[i][0] = 0.25 * (c0 + vn0);
+                RKR[i][1] = 0.25 * (c0 * rho0 * (c0 + vn0) * nx);
+                RKR[i][2] = 0.25 * (c0 * rho0 * (c0 + vn0) * ny);
+                RKR[i][3] = 0.25 * (c0 * rho0 * (c0 + vn0) * nz);
 
-                RKR[i][8] = 0.25 * fNormal(f, g, 1) / config.rho0;
-                RKR[i][9] = 0.25 * config.c0 * fNormal(f, g, 1) * fNormal(f, g, 0);
-                RKR[i][10] = 0.25 * config.c0 * fNormal(f, g, 1) * fNormal(f, g, 1);
-                RKR[i][11] = 0.25 * config.c0 * fNormal(f, g, 1) * fNormal(f, g, 2);
+                RKR[i][4] = 0.25 * (nx * (c0 + vn0) / (rho0 * c0));
+                RKR[i][5] = 0.25 * ((c0 + vn0) * nx * nx - vn0 * lambda * (tx * tx + sx * sx));
+                RKR[i][6] = 0.25 * ((c0 + vn0) * nx * ny - vn0 * lambda * (ty * tx + sy * sx));
+                RKR[i][7] = 0.25 * ((c0 + vn0) * nx * nz - vn0 * lambda * (tz * tx + sz * sx));
 
-                RKR[i][12] = 0.25 * fNormal(f, g, 2) / config.rho0;
-                RKR[i][13] = 0.25 * config.c0 * fNormal(f, g, 2) * fNormal(f, g, 0);
-                RKR[i][14] = 0.25 * config.c0 * fNormal(f, g, 2) * fNormal(f, g, 1);
-                RKR[i][15] = 0.25 * config.c0 * fNormal(f, g, 2) * fNormal(f, g, 2);
+                RKR[i][8] = 0.25 * (ny * (c0 + vn0) / (rho0 * c0));
+                RKR[i][9] = 0.25 * ((c0 + vn0) * ny * nx - vn0 * lambda * (tx * ty + sx * sy));
+                RKR[i][10] = 0.25 * ((c0 + vn0) * ny * ny - vn0 * lambda * (ty * ty + sy * sy));
+                RKR[i][11] = 0.25 * ((c0 + vn0) * ny * nz - vn0 * lambda * (tz * ty + sz * sy));
+
+                RKR[i][12] = 0.25 * (nz * (c0 + vn0) / (rho0 * c0));
+                RKR[i][13] = 0.25 * ((c0 + vn0) * nz * nx - vn0 * lambda * (tx * tz + sx * sz));
+                RKR[i][14] = 0.25 * ((c0 + vn0) * nz * ny - vn0 * lambda * (ty * tz + sy * sz));
+                RKR[i][15] = 0.25 * ((c0 + vn0) * nz * nz - vn0 * lambda * (tz * tz + sz * sz));
+
+                /* RKR[i][0] = 0.5*((L3+L1)*(nz*nz+ny*ny)+(L2+L1)*nx*nx);
+                RKR[i][1] = -0.5*((L3-L1)*(nz*nz+ny*ny)+(L2-L1)*nx*nx);
+                RKR[i][2] = (L3-L2)*nx*(ny*ny+nz*nz)/(rho0*c0);
+                RKR[i][3] = -(L3-L2)*nx*nx*ny/(rho0*c0);
+
+                RKR[i][4] = -0.5*((L3-L1)*(nz*nz+ny*ny)+(L2-L1)*nx*nx);
+                RKR[i][5] = 0.5*((L3+L1)*(nz*nz+ny*ny)+(L2+L1)*nx*nx);
+                RKR[i][6] = -(L3-L2)*nx*(ny*ny+nz*nz)/(rho0*c0);
+                RKR[i][7] = (L3-L2)*nx*nx*ny/(rho0*c0);
+
+                RKR[i][8]  = 0.5*(L3-L2)*rho0*c0*nx;
+                RKR[i][9]  = -0.5*(L3-L2)*rho0*c0*nx;
+                RKR[i][10] = L2*(nz*nz+ny*ny)+L3*nx*nx;
+                RKR[i][11] = (L3-L2)*nx*ny;
+
+                RKR[i][12] = 0;
+                RKR[i][13] = 0;
+                RKR[i][14] = 0;
+                RKR[i][15] = L3; */
             }
         }
     }
@@ -1059,7 +1145,6 @@ void Mesh::getConnectivityFaceToElement()
  * Added by Sofiane KHELLADI in 11/03/2022
  */
 
-
 void Mesh::writeVTUb(std::string filename, std::vector<std::vector<double>> &u)
 {
     // std::string filename = filename;
@@ -1113,12 +1198,12 @@ void Mesh::writeVTUb(std::string filename, std::vector<std::vector<double>> &u)
     velocity->SetName("Velocity [m/s]");
     velocity->SetNumberOfComponents(3);
 
-    std::vector<size_t> nb_occurence(node_tag.size(),1);
-    std::vector<double> pressure_vec(node_tag.size(),0.0);
-    std::vector<double> density_vec(node_tag.size(),0.0);
-    std::vector<double> vel_x_vec(node_tag.size(),0.0);
-    std::vector<double> vel_y_vec(node_tag.size(),0.0);
-    std::vector<double> vel_z_vec(node_tag.size(),0.0);
+    std::vector<size_t> nb_occurence(node_tag.size(), 1);
+    std::vector<double> pressure_vec(node_tag.size(), 0.0);
+    std::vector<double> density_vec(node_tag.size(), 0.0);
+    std::vector<double> vel_x_vec(node_tag.size(), 0.0);
+    std::vector<double> vel_y_vec(node_tag.size(), 0.0);
+    std::vector<double> vel_z_vec(node_tag.size(), 0.0);
 
     for (size_t el = 0; el < getElNum(); ++el)
     {
@@ -1137,7 +1222,6 @@ void Mesh::writeVTUb(std::string filename, std::vector<std::vector<double>> &u)
         density->InsertNextValue(rho / getElNumNodes());
         velocity->InsertNextTuple(V);
     }
-
 
     unstructuredGrid->SetPoints(points);
 

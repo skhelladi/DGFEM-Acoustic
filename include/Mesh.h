@@ -124,6 +124,10 @@ public:
     {
         return m_fIntPtCoords[f * m_fNumIntPts * 3 + g * 3 + x];
     };
+    inline double &fIntParamCoord(int f, int g = 0, int x = 0)
+    {
+        return m_fIntParamCoords[f * m_fNumIntPts * 3 + g * 3 + x];
+    };
     inline double &fWeight(int g)
     {
         return m_fIntParamCoords[g * 4 + 3];
@@ -135,6 +139,14 @@ public:
     inline double &fNormal(int f, int g = 0, int x = 0)
     {
         return m_fNormals[f * 3 * m_fNumIntPts + g * 3 + x];
+    };
+    inline double &fTangent(int f, int g = 0, int x = 0)
+    {
+        return m_fTangents[f * 3 * m_fNumIntPts + g * 3 + x];
+    };
+    inline double &fBiTangent(int f, int g = 0, int x = 0)
+    {
+        return m_fBiTangents[f * 3 * m_fNumIntPts + g * 3 + x];
     };
     inline size_t &elFId(size_t el, int f = 0)
     {
@@ -274,6 +286,10 @@ private:
                                             // [e1g1df1/dx, e1g1df1/dy, ..., e1g2df1/dx, e1g2df1/dy, ..., e1g1df2/dx, e1g1df2/dy, ...]
     std::vector<double> m_fNormals;         // Normal for each face at each int point
                                             // [f1g1Nx, f1g1Ny, f1g1Nz, f1g2Nx, ..., f2g1Nx, f2g1Ny, f2g1Nz, ...]
+    std::vector<double> m_fTangents;         // Tangent for each face at each int point
+                                            // [f1g1Tx, f1g1Ty, f1g1Tz, f1g2Tx, ..., f2g1Tx, f2g1Ty, f2g1Tz, ...]
+    std::vector<double> m_fBiTangents;         // BiTangent for each face at each int point
+                                            // [f1g1Sx, f1g1Sy, f1g1Sz, f1g2Sx, ..., f2g1Sx, f2g1Sy, f2g1Sz, ...]                                        
 
     std::vector<std::vector<size_t>> m_fNbrElIds;  // Id of element of each side of the face
     std::vector<std::vector<size_t>> m_fNToElNIds; // Map face node Ids to element node Ids

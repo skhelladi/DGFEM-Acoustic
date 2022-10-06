@@ -58,7 +58,7 @@ namespace config
             config.timeRate = std::stod(configMap["timeRate"]);
             config.elementType = configMap["elementType"];
             config.timeIntMethod = configMap["timeIntMethod"];
-            config.saveFile = configMap["saveFile"];
+            // config.saveFile = configMap["saveFile"];
             config.numThreads = std::stoi(configMap["numThreads"]);
             config.numThreads = config.numThreads == 1 ? 0 : config.numThreads;
             config.v0[0] = std::stod(configMap["v0_x"]);
@@ -145,7 +145,7 @@ namespace config
                 }
             }
 
-            std::remove(&config.saveFile[0]);
+            // std::remove(&config.saveFile[0]);
 
             std::string physName;
             gmsh::vectorpair m_physicalDimTags;

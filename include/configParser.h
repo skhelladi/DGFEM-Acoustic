@@ -63,7 +63,7 @@ struct Config
     std::vector<std::vector<double>> initConditions;
 
     // Save file
-    std::string saveFile = "results.msh";
+    // std::string saveFile = "results.msh";
 };
 
 namespace config

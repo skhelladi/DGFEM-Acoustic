@@ -11,6 +11,7 @@ The solver is based on [GMSH](http://gmsh.info/) library and supports a wide ran
 - 4-th order Runge-Kutta
 - High order elements
 - Absorbing and reflecting boundaries
+- Multiple sources support: monopoles, dipoles, quadrupoles and user defined analytical formulation sources 
 - Complex geometry and unstructured grid (only triangles (2D) and tetrahedrons (3D) elements are supported)
 - VTK Post-processing (use [Paraview](https://www.paraview.org/)) 
 
@@ -26,13 +27,13 @@ The solver is based on [GMSH](http://gmsh.info/) library and supports a wide ran
 First, make sure the following libraries are installed. If you are running a linux distribution (ubuntu, debian, ...), an installation [script](https://github.com/skhelladi/DGFEM-CAA/edit/development//build.sh) is provided. 
 
 ```
-Gmsh
-Eigen
+Gmsh (v4.10.5)
+Eigen (v3.4.0)
 Lapack
 Blas
 OpenMP
 Libtbb
-VTK
+VTK (v9.x)
 ```
 
 ### Installing
@@ -75,12 +76,69 @@ or configure run_caa batch file with the right mesh and configurations files.
 ```
 sh run_caa 
 ```
+## Configuration file example
+<!-- python style text highlight -->
+```python 
+# Initial, final time and time step(t>0)
+timeStart=0
+timeEnd=0.05
+timeStep=0.00001
 
+# Saving rate:
+timeRate=0.001
+
+# Element Type:
+# ["Lagrange", "IsoParametric", ...]
+elementType=Lagrange
+
+# Time integration method:
+# ["Euler1", "Euler2", "Runge-Kutta"...]
+timeIntMethod=Runge-Kutta
+
+# Boundary condition:
+# /!\ The physical group name must match the Gmsh name (case sensitive)
+Reflecting = Reflecting
+Absorbing = Absorbing
+MyPhysicalName = Absorbing
+
+# Number of thread
+numThreads=12
+
+# Mean Flow parameters
+v0_x = -30
+v0_y = 30
+v0_z = 0
+rho0 = 1.225
+c0 = 100
+
+# Source:
+# name = fct,x,y,z,size,intensity,frequency,phase,duration
+# - fct supported = [monopole, dipole, quadrupole, udf]
+# - if fct = udf => name = fct,formula,x,y,z,size,duration (ex: formulat = 0.1 * sin(2 * pi * 50 * t))
+# - (x,y,z) = source position
+# - intensity = source intensity
+# - frequency = source frequency
+# NB: Extended source or Multiple sources are supported.
+#     (source1 = ..., source2 = ...) indice must change.
+# source1 = monopole, 0.0,0.0,0.0, 0.1, 0.1,50,0,0.1
+source1 = udf, "0.1 * sin(2 * pi * 50 * t)", 0.0,0.0,0.0, 0.1, 0.1
+# source2 = udf, "-0.1 * sin(2 * pi * 50 * t)", -0.5,0.0,0.0, 0.1, 0.1
+
+# Initial condition:
+# name = gaussian,x,y,z, size, amplitude
+# - fct supported = [gaussian]
+# - (x,y,z) = position
+# - amplitude = initial amplitude
+# NB: Multiple CI are supported and recursively added.
+#     (initial condition1 = ..., initial condition = ...)
+# initialCondtition1 = gaussian, 0,0,0,1,1
+
+```
 
 ## Author
 * Sofiane Khelladi
 
-## Forked from code developed by
+#### Forked from code developed by
 * Pierre-Olivier Vanberg
 * Martin Lacroix
 * Tom Servais
