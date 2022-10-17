@@ -274,31 +274,36 @@ Mesh::Mesh(std::string name, Config config) : name(name), config(config)
     // #pragma omp parallel for
     for (int f = 0; f < m_fNum; ++f)
     {
-        // TODO: compute here tangent and bitangent for 3D cases
-        std::vector<double> p1 = {fIntPtCoord(f, 0, 0), fIntPtCoord(f, 0, 1), fIntPtCoord(f, 0, 2)};
-        std::vector<double> p2 = {fIntPtCoord(f, 1, 0), fIntPtCoord(f, 1, 1), fIntPtCoord(f, 1, 2)};
-        std::vector<double> p3 = {fIntPtCoord(f, 2, 0), fIntPtCoord(f, 2, 1), fIntPtCoord(f, 2, 2)};
-
-        double h = sqrt(pow(p2[0]-p1[0],2)+pow(p2[1]-p1[1],2)+pow(p2[2]-p1[2],2));
-        double i = ((p2[0]-p1[0])*(p3[0]-p1[0])+(p2[1]-p1[1])*(p3[1]-p1[1])+(p2[2]-p1[2])*(p3[2]-p1[2]))/h;
-        double j = sqrt(pow(p3[0]-p1[0],2)+pow(p3[1]-p1[1],2)+pow(p3[2]-p1[2],2)-pow(i,2));
-
-        double u1(0), v1(0);
-        double u2(h), v2(0);
-        double u3(i), v3(j);
+        // compute here tangent and bitangent for 3D cases
 
         std::vector<double> T = {0, 0, 0};
         std::vector<double> B = {0, 0, 0};
 
-        double delta = fabs(u2 - u1) * fabs(v3 - v1) - fabs(v2 - v1) * fabs(u3 - u1);
+        if (m_fDim == 2)
+        {
+            //! only primary nodes are used  
+            std::vector<double> p1 = {fIntPtCoord(f, 0, 0), fIntPtCoord(f, 0, 1), fIntPtCoord(f, 0, 2)};
+            std::vector<double> p2 = {fIntPtCoord(f, 1, 0), fIntPtCoord(f, 1, 1), fIntPtCoord(f, 1, 2)};
+            std::vector<double> p3 = {fIntPtCoord(f, 2, 0), fIntPtCoord(f, 2, 1), fIntPtCoord(f, 2, 2)};
 
-        T[0] = (fabs(v3 - v1) * (p2[0] - p1[0]) - fabs(v2 - v1) * (p3[0] - p1[0])) / delta;
-        T[1] = (fabs(v3 - v1) * (p2[1] - p1[1]) - fabs(v2 - v1) * (p3[1] - p1[1])) / delta;
-        T[2] = (fabs(v3 - v1) * (p2[2] - p1[2]) - fabs(v2 - v1) * (p3[2] - p1[2])) / delta;
+            double h = sqrt(pow(p2[0] - p1[0], 2) + pow(p2[1] - p1[1], 2) + pow(p2[2] - p1[2], 2));
+            double i = ((p2[0] - p1[0]) * (p3[0] - p1[0]) + (p2[1] - p1[1]) * (p3[1] - p1[1]) + (p2[2] - p1[2]) * (p3[2] - p1[2])) / h;
+            double j = sqrt(pow(p3[0] - p1[0], 2) + pow(p3[1] - p1[1], 2) + pow(p3[2] - p1[2], 2) - pow(i, 2));
 
-        B[0] = -(fabs(u3 - u1) * (p2[0] - p1[0]) - fabs(u2 - u1) * (p3[0] - p1[0])) / delta;
-        B[1] = -(fabs(u3 - u1) * (p2[1] - p1[1]) - fabs(u2 - u1) * (p3[1] - p1[1])) / delta;
-        B[2] = -(fabs(u3 - u1) * (p2[2] - p1[2]) - fabs(u2 - u1) * (p3[2] - p1[2])) / delta;
+            double u1(0), v1(0);
+            double u2(h), v2(0);
+            double u3(i), v3(j);
+
+            double delta = fabs(u2 - u1) * fabs(v3 - v1) - fabs(v2 - v1) * fabs(u3 - u1);
+
+            T[0] = (fabs(v3 - v1) * (p2[0] - p1[0]) - fabs(v2 - v1) * (p3[0] - p1[0])) / delta;
+            T[1] = (fabs(v3 - v1) * (p2[1] - p1[1]) - fabs(v2 - v1) * (p3[1] - p1[1])) / delta;
+            T[2] = (fabs(v3 - v1) * (p2[2] - p1[2]) - fabs(v2 - v1) * (p3[2] - p1[2])) / delta;
+
+            B[0] = -(fabs(u3 - u1) * (p2[0] - p1[0]) - fabs(u2 - u1) * (p3[0] - p1[0])) / delta;
+            B[1] = -(fabs(u3 - u1) * (p2[1] - p1[1]) - fabs(u2 - u1) * (p3[1] - p1[1])) / delta;
+            B[2] = -(fabs(u3 - u1) * (p2[2] - p1[2]) - fabs(u2 - u1) * (p3[2] - p1[2])) / delta;
+        }
 
         // screen_display::write_value("delta", delta);
         // screen_display::write_value("|T|", sqrt(pow(T[0], 2) + pow(T[1], 2) + pow(T[2], 2)));
@@ -342,7 +347,6 @@ Mesh::Mesh(std::string name, Config config) : name(name), config(config)
                         normal[x] *= -1.0;
                     // normal[x] = -normal[x];
                 }
-                // FIXME: provisoire
                 tangent = {T[0], T[1], T[2]};
                 bitangent = {B[0], B[1], B[2]};
                 break;
@@ -626,7 +630,8 @@ Mesh::Mesh(std::string name, Config config) : name(name), config(config)
                 double c0(config.c0), rho0(config.rho0);
                 double vx0(config.v0[0]), vy0(config.v0[1]), vz0(config.v0[2]);
                 double vn0 = vx0 * nx + vy0 * ny + vz0 * nz;
-                double lambda = (vn0 < 0) ? 0 : -1; // FIXME: Warning: lambda=-1 and not 1, this work but there is probably a bug in the code (physics formulation)...
+                double lambda = (vn0 < 0) ? 0 : -1; // FIXME: Warning: lambda=-1 and not 1, this work but there is probably a bug in the code 
+                                                    // (pre-processing)...
 
                 // double L1(fabs(vn0-c0)), L2(fabs(vn0+c0)), L3(fabs(vn0-c0));
 
@@ -655,25 +660,6 @@ Mesh::Mesh(std::string name, Config config) : name(name), config(config)
                 RKR[i][14] = 0.25 * ((c0 + vn0) * nz * ny - vn0 * lambda * (ty * tz + sy * sz));
                 RKR[i][15] = 0.25 * ((c0 + vn0) * nz * nz - vn0 * lambda * (tz * tz + sz * sz));
 
-                /* RKR[i][0] = 0.5*((L3+L1)*(nz*nz+ny*ny)+(L2+L1)*nx*nx);
-                RKR[i][1] = -0.5*((L3-L1)*(nz*nz+ny*ny)+(L2-L1)*nx*nx);
-                RKR[i][2] = (L3-L2)*nx*(ny*ny+nz*nz)/(rho0*c0);
-                RKR[i][3] = -(L3-L2)*nx*nx*ny/(rho0*c0);
-
-                RKR[i][4] = -0.5*((L3-L1)*(nz*nz+ny*ny)+(L2-L1)*nx*nx);
-                RKR[i][5] = 0.5*((L3+L1)*(nz*nz+ny*ny)+(L2+L1)*nx*nx);
-                RKR[i][6] = -(L3-L2)*nx*(ny*ny+nz*nz)/(rho0*c0);
-                RKR[i][7] = (L3-L2)*nx*nx*ny/(rho0*c0);
-
-                RKR[i][8]  = 0.5*(L3-L2)*rho0*c0*nx;
-                RKR[i][9]  = -0.5*(L3-L2)*rho0*c0*nx;
-                RKR[i][10] = L2*(nz*nz+ny*ny)+L3*nx*nx;
-                RKR[i][11] = (L3-L2)*nx*ny;
-
-                RKR[i][12] = 0;
-                RKR[i][13] = 0;
-                RKR[i][14] = 0;
-                RKR[i][15] = L3; */
             }
         }
     }
@@ -1142,13 +1128,12 @@ void Mesh::getConnectivityFaceToElement()
 
 /**
  * @brief Write VTK & PVD
- * Added by Sofiane KHELLADI in 11/03/2022
  */
 
 void Mesh::writeVTUb(std::string filename, std::vector<std::vector<double>> &u)
 {
     // std::string filename = filename;
-    screen_display::write_string("Write VTU at " + filename, BOLDRED);
+    screen_display::write_string("Write VTU: " + filename, BOLDRED);
 
     size_t eltype;
     std::vector<size_t> node_tag;
@@ -1233,9 +1218,6 @@ void Mesh::writeVTUb(std::string filename, std::vector<std::vector<double>> &u)
     unstructuredGrid->GetCellData()->AddArray(pressure);
     unstructuredGrid->GetCellData()->AddArray(density);
     unstructuredGrid->GetCellData()->AddArray(velocity);
-    // unstructuredGrid->GetPointData()->AddArray(pressure);
-    // unstructuredGrid->GetPointData()->AddArray(density);
-    // unstructuredGrid->GetPointData()->AddArray(velocity);
 
     // Write file
 

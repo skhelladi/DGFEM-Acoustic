@@ -24,7 +24,7 @@ The solver is based on [GMSH](http://gmsh.info/) library and supports a wide ran
  	
 ### Prerequisites
 
-First, make sure the following libraries are installed. If you are running a linux distribution (ubuntu, debian, ...), an installation [script](https://github.com/skhelladi/DGFEM-CAA/edit/development//build.sh) is provided. 
+First, make sure the following libraries are installed. If you are running a linux distribution (ubuntu, debian, ...), an installation [script](https://github.com/skhelladi/DGFEM-CAA/blob/main/build.sh) is provided. 
 
 ```
 Gmsh (v4.10.5)

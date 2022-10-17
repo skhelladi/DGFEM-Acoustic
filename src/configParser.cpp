@@ -97,7 +97,7 @@ namespace config
                         else if (sep[0] == "quadrupole")
                         {
                             pole = 2;
-                        
+
                             Sources S1("", {pole, x - size, y, z, size / 2., amp, freq, phase, duration});
                             Sources S2("", {pole, x + size, y, z, size / 2., amp, freq, phase, duration});
                             Sources S3("", {pole, x, y - size, z, size / 2., amp, freq, phase + M_PI, duration});
@@ -110,7 +110,7 @@ namespace config
                         else //! monopole
                         {
                             pole = 0;
-                        
+
                             Sources S("", {pole, x, y, z, size, amp, freq, phase, duration});
                             config.sources.push_back(S);
                         }
@@ -118,9 +118,11 @@ namespace config
                     else
                     {
                         std::string expr = sep[1];
-                        
-                        if(expr.front()=='"') expr.erase(0,1);
-                        if(expr.back()=='"') expr.pop_back();
+
+                        if (expr.front() == '"')
+                            expr.erase(0, 1);
+                        if (expr.back() == '"')
+                            expr.pop_back();
 
                         double x = std::stod(sep[2]);
                         double y = std::stod(sep[3]);
@@ -131,6 +133,16 @@ namespace config
                         Sources S(expr, {pole, x, y, z, size, duration});
                         config.sources.push_back(S);
                     }
+                }
+                else if (key.find("observer") == 0)
+                {
+                   std::vector<std::string> sep = split(iter->second, ',');
+                    double x = std::stod(sep[0]);
+                    double y = std::stod(sep[1]);
+                    double z = std::stod(sep[2]);
+                    double size = std::stod(sep[3]);
+                    std::vector<double> obs = {x,y,z,size};
+                    config.observers.push_back(obs);
                 }
                 else if (key.find("initialCondtition") == 0)
                 {

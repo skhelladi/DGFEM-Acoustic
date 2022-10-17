@@ -1,7 +1,7 @@
+#include "eqEdit.h"
 #include <fstream>
 #include <map>
 #include <string>
-#include "eqEdit.h"
 
 #ifndef DGALERKIN_CONFIG_H
 #define DGALERKIN_CONFIG_H
@@ -21,9 +21,15 @@ public:
     EQ_EDIT expression;
     double value(double t)
     {
-        return expression.value(true,formula,{{"t",t}});
+        return expression.value(true, formula, {{"t", t}});
     }
 };
+
+// class Observers
+// {
+// public:
+//     std::vector<double> observer;
+// };
 
 struct Config
 {
@@ -59,8 +65,12 @@ struct Config
     //     std::string source_expression = "";
     // };
     std::vector<Sources> sources;
+    // Obsertvers
+    std::vector<std::vector<double>> observers;
+
     // Initial conditions
     std::vector<std::vector<double>> initConditions;
+    
 
     // Save file
     // std::string saveFile = "results.msh";

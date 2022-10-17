@@ -107,11 +107,45 @@ namespace solver
             srcIndices.push_back(indice);
         }
 
+        /** Observer */
+        std::vector<std::vector<int>> obsIndices;
+        std::vector<std::vector<double>> obsPtDistance;
+        for (int i = 0; i < config.observers.size(); ++i)
+        {
+            std::vector<int> indice;
+            std::vector<double> dist;
+            for (int n = 0; n < mesh.getNumNodes(); n++)
+            {
+                std::vector<double> coord, paramCoord;
+                int _dim, _tag;
+                gmsh::model::mesh::getNode(mesh.getElNodeTags()[n], coord, paramCoord, _dim, _tag);
+                double distance = sqrt(pow(coord[0] - config.observers[i][0], 2) +
+                                       pow(coord[1] - config.observers[i][1], 2) +
+                                       pow(coord[2] - config.observers[i][2], 2));
+                if (distance < config.observers[i][3])
+                {
+                    indice.push_back(n);
+                    dist.push_back(distance);
+                }
+            }
+            obsIndices.push_back(indice);
+            obsPtDistance.push_back(dist);
+        }
+
         /**
          * Main Loop : Time iteration
          */
         std::ofstream outfile("residuals.txt");
         outfile << "time;res_p;res_rho;res_vx;res_vy;res_vz;elapsed_time" << std::endl;
+
+        std::vector<std::ofstream> obs_outfile(config.observers.size());
+        for (int obs = 0; obs < config.observers.size(); ++obs)
+        {
+            std::string filename = "results/observers" + std::to_string(obs + 1) + ".txt";
+            obs_outfile[obs].open(filename.c_str());
+            obs_outfile[obs] << "time;pressure;density;velocity_x;velocity_y;velocity_z" << std::endl;
+        }
+
         auto start = std::chrono::system_clock::now();
         for (double t = config.timeStart, step = 0, tDisplay = 0; t <= config.timeEnd;
              t += config.timeStep, tDisplay += config.timeStep, ++step)
@@ -183,6 +217,9 @@ namespace solver
             mesh.updateFlux(u, Flux, config.v0, config.c0, config.rho0);
             numStep(mesh, config, u, Flux, 1);
 
+            /**
+             * Compute residuals
+             */
 #pragma omp parallel for schedule(static) num_threads(config.numThreads)
             for (int el = 0; el < mesh.getElNum(); ++el)
             {
@@ -213,13 +250,36 @@ namespace solver
             }
             std::cout << elapsed_time.count() * 1.0e-6 << " s" << std::endl;
             outfile << elapsed_time.count() * 1.0e-6 << std::endl;
-        }
 
-        /** Save to file */
-        // gmsh::view::write(gp_viewTag, config.saveFile, true);
-        // gmsh::view::write(grho_viewTag, config.saveFile, true);
-        // gmsh::view::write(gv_viewTag, config.saveFile, true);
+            /**
+             * get observers value
+             * Franke-Little interpolation method
+             */
+             for (int obs = 0; obs < config.observers.size(); ++obs)
+            {
+                double p(0), rho(0), w_sum(0);
+                std::vector<double> v = {0, 0, 0};
+                for (int n = 0; n < obsIndices[obs].size(); ++n)
+                {
+                    double R = config.observers[obs][3]; //! influence sphere
+                    double w = 1.0 / (pow(obsPtDistance[obs][n],2)+1.0e-12);//fmax(1.0-obsPtDistance[obs][n]/R,0.0);//1.0 / pow(obsPtDistance[obs][n],2);
+                    p += u[0][obsIndices[obs][n]] * w;
+                    v[0] += u[1][obsIndices[obs][n]] * w;
+                    v[1] += u[2][obsIndices[obs][n]] * w;
+                    v[2] += u[3][obsIndices[obs][n]] * w;
+                    w_sum += w;
+                }
+                p /= w_sum;
+                rho = p / pow(config.c0, 2);
+                v[0] /= w_sum;
+                v[1] /= w_sum;
+                v[2] /= w_sum;
+                obs_outfile[obs] << t << ";" << rho << ";" << p << ";" << v[0] << ";" << v[1] << ";" << v[2] << std::endl;
+            }
+        }
         outfile.close();
+        for (int obs = 0; obs < config.observers.size(); ++obs)
+            obs_outfile[obs].close();
     }
 
     /**
@@ -278,12 +338,57 @@ namespace solver
             srcIndices.push_back(indice);
         }
 
+        /** Observer */
+        std::vector<std::vector<int>> obsIndices;
+        std::vector<std::vector<double>> obsPtDistance;
+        for (int i = 0; i < config.observers.size(); ++i)
+        {
+            std::vector<int> indice;
+            std::vector<double> dist;
+            for (int n = 0; n < mesh.getNumNodes(); n++)
+            {
+                std::vector<double> coord, paramCoord;
+                int _dim, _tag;
+                gmsh::model::mesh::getNode(mesh.getElNodeTags()[n], coord, paramCoord, _dim, _tag);
+                double distance = sqrt(pow(coord[0] - config.observers[i][0], 2) +
+                                       pow(coord[1] - config.observers[i][1], 2) +
+                                       pow(coord[2] - config.observers[i][2], 2));
+                if (distance < config.observers[i][3])
+                {
+                    indice.push_back(n);
+                    dist.push_back(distance);
+                }
+            }
+            obsIndices.push_back(indice);
+            obsPtDistance.push_back(dist);
+        }
+
+        // for (int i = 0; i < obsIndices.size(); i++)
+        // {
+        //     for (int j = 0; j < obsIndices[i].size(); j++)
+        //     {
+        //         std::cout << obsIndices[i][j] << "\t";
+        //     }
+        //     std::cout << std::endl;
+        // }
+        // getchar();
+
         /**
          * Main Loop : Time iteration
          */
 
         std::ofstream outfile("residuals.txt");
         outfile << "time;log(res_p);log(res_rho);log(res_vx);log(res_vy);log(res_vz);elapsed_time(s)" << std::endl;
+
+        std::vector<std::ofstream> obs_outfile(config.observers.size());
+
+        for (int obs = 0; obs < config.observers.size(); ++obs)
+        {
+            std::string filename = "results/observers" + std::to_string(obs + 1) + ".txt";
+            obs_outfile[obs].open(filename.c_str());
+            obs_outfile[obs] << "time;density;pressure;velocity_x;velocity_y;velocity_z" << std::endl;
+        }
+
         auto start = std::chrono::system_clock::now();
         for (double t = config.timeStart, step = 0, tDisplay = 0; t <= config.timeEnd;
              t += config.timeStep, tDisplay += config.timeStep, ++step)
@@ -346,7 +451,7 @@ namespace solver
                     if (t < duration)
                         for (int n = 0; n < srcIndices[src].size(); ++n)
                             u[0][srcIndices[src][n]] = config.sources[src].value(t);
-                }        
+                }
             }
 
             /**
@@ -412,8 +517,34 @@ namespace solver
             }
             std::cout << elapsed_time.count() * 1.0e-6 << " s" << std::endl;
             outfile << elapsed_time.count() * 1.0e-6 << std::endl;
+            /**
+             * get observers value
+             * Inverse distance weight interpolation method
+             */
+             for (int obs = 0; obs < config.observers.size(); ++obs)
+            {
+                double p(0), rho(0), w_sum(0);
+                std::vector<double> v = {0, 0, 0};
+                for (int n = 0; n < obsIndices[obs].size(); ++n)
+                {
+                    double R = config.observers[obs][3]; //! influence sphere
+                    double w = 1.0 / (pow(obsPtDistance[obs][n],2)+1.0e-12);//fmax(1.0-obsPtDistance[obs][n]/R,0.0);//1.0 / pow(obsPtDistance[obs][n],2);
+                    p += u[0][obsIndices[obs][n]] * w;
+                    v[0] += u[1][obsIndices[obs][n]] * w;
+                    v[1] += u[2][obsIndices[obs][n]] * w;
+                    v[2] += u[3][obsIndices[obs][n]] * w;
+                    w_sum += w;
+                }
+                p /= w_sum;
+                rho = p / pow(config.c0, 2);
+                v[0] /= w_sum;
+                v[1] /= w_sum;
+                v[2] /= w_sum;
+                obs_outfile[obs] << t << ";" << rho << ";" << p << ";" << v[0] << ";" << v[1] << ";" << v[2] << std::endl;
+            }
         }
-
         outfile.close();
+        for (int obs = 0; obs < config.observers.size(); ++obs)
+            obs_outfile[obs].close();
     }
 }
