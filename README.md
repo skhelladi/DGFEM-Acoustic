@@ -133,6 +133,15 @@ source1 = udf, "0.1 * sin(2 * pi * 50 * t)", 0.0,0.0,0.0, 0.1, 0.1
 #     (initial condition1 = ..., initial condition = ...)
 # initialCondtition1 = gaussian, 0,0,0,1,1
 
+# Observers position:
+# name = x,y,z, size
+# - (x,y,z) = position
+# NB: Multiple observers are supported and recursively added.
+#     (observer1 = ..., observer2 = ...)
+observer1 = 2.11792,0.00340081,0.0,0.1
+observer2 = -2.11792,0.00340081,0.0,0.1
+
+
 ```
 
 ## Author
