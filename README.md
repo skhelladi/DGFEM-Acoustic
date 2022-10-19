@@ -123,7 +123,7 @@ c0 = 100
 #     (source1 = ..., source2 = ...) indice must change.
 source1 = formula, "0.1 * sin(2 * pi * 50 * t)", 0.0,0.0,0.0, 0.1, 0.1
 source2 = monopole, 0.0,0.0,0.0, 0.1, 0.1,50,0,0.1
-#source3 = file,"data/data.csv", 0.0,0.0,0.0, 0.1
+source3 = file,"data/data.csv", 0.0,0.0,0.0, 0.1
 # source4 = udf, "-0.1 * sin(2 * pi * 50 * t)", -0.5,0.0,0.0, 0.1, 0.1
 
 # Initial condition:
