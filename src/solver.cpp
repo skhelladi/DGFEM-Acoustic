@@ -255,14 +255,14 @@ namespace solver
              * get observers value
              * Franke-Little interpolation method
              */
-             for (int obs = 0; obs < config.observers.size(); ++obs)
+            for (int obs = 0; obs < config.observers.size(); ++obs)
             {
                 double p(0), rho(0), w_sum(0);
                 std::vector<double> v = {0, 0, 0};
                 for (int n = 0; n < obsIndices[obs].size(); ++n)
                 {
-                    double R = config.observers[obs][3]; //! influence sphere
-                    double w = 1.0 / (pow(obsPtDistance[obs][n],2)+1.0e-12);//fmax(1.0-obsPtDistance[obs][n]/R,0.0);//1.0 / pow(obsPtDistance[obs][n],2);
+                    double R = config.observers[obs][3];                        //! influence sphere
+                    double w = 1.0 / (pow(obsPtDistance[obs][n], 2) + 1.0e-12); // fmax(1.0-obsPtDistance[obs][n]/R,0.0);//1.0 / pow(obsPtDistance[obs][n],2);
                     p += u[0][obsIndices[obs][n]] * w;
                     v[0] += u[1][obsIndices[obs][n]] * w;
                     v[1] += u[2][obsIndices[obs][n]] * w;
@@ -435,7 +435,7 @@ namespace solver
             /** Source */
             for (int src = 0; src < config.sources.size(); ++src)
             {
-                if (config.sources[src].formula == "")
+                if (config.sources[src].formula == "" && config.sources[src].data.empty())
                 {
                     double amp = config.sources[src].source[5];
                     double freq = config.sources[src].source[6];
@@ -447,10 +447,17 @@ namespace solver
                 }
                 else
                 {
-                    double duration = config.sources[src].source[5];
-                    if (t < duration)
-                        for (int n = 0; n < srcIndices[src].size(); ++n)
-                            u[0][srcIndices[src][n]] = config.sources[src].value(t);
+                    if (config.sources[src].data.empty())
+                    {
+                        double duration = config.sources[src].source[5];
+                        if (t < duration)
+                            for (int n = 0; n < srcIndices[src].size(); ++n)
+                                u[0][srcIndices[src][n]] = config.sources[src].value(t);
+                    }else 
+                    {
+                       for (int n = 0; n < srcIndices[src].size(); ++n)
+                                u[0][srcIndices[src][n]] = config.sources[src].interpolate_value(t); 
+                    }
                 }
             }
 
@@ -521,14 +528,14 @@ namespace solver
              * get observers value
              * Inverse distance weight interpolation method
              */
-             for (int obs = 0; obs < config.observers.size(); ++obs)
+            for (int obs = 0; obs < config.observers.size(); ++obs)
             {
                 double p(0), rho(0), w_sum(0);
                 std::vector<double> v = {0, 0, 0};
                 for (int n = 0; n < obsIndices[obs].size(); ++n)
                 {
-                    double R = config.observers[obs][3]; //! influence sphere
-                    double w = 1.0 / (pow(obsPtDistance[obs][n],2)+1.0e-12);//fmax(1.0-obsPtDistance[obs][n]/R,0.0);//1.0 / pow(obsPtDistance[obs][n],2);
+                    double R = config.observers[obs][3];                        //! influence sphere
+                    double w = 1.0 / (pow(obsPtDistance[obs][n], 2) + 1.0e-12); // fmax(1.0-obsPtDistance[obs][n]/R,0.0);//1.0 / pow(obsPtDistance[obs][n],2);
                     p += u[0][obsIndices[obs][n]] * w;
                     v[0] += u[1][obsIndices[obs][n]] * w;
                     v[1] += u[2][obsIndices[obs][n]] * w;

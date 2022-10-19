@@ -73,8 +73,8 @@ namespace config
                 if (key.find("source") == 0)
                 {
                     std::vector<std::string> sep = split(iter->second, ',');
-
-                    if (sep[0] != "udf")
+                    
+                    if (sep[0] != "formula" && sep[0] != "file")
                     {
                         double x = std::stod(sep[1]);
                         double y = std::stod(sep[2]);
@@ -116,32 +116,52 @@ namespace config
                         }
                     }
                     else
-                    {
-                        std::string expr = sep[1];
+                    { 
 
-                        if (expr.front() == '"')
-                            expr.erase(0, 1);
-                        if (expr.back() == '"')
-                            expr.pop_back();
+                        if (sep[0] == "formula")
+                        {
+                            std::string expr = sep[1];
 
-                        double x = std::stod(sep[2]);
-                        double y = std::stod(sep[3]);
-                        double z = std::stod(sep[4]);
-                        double size = std::stod(sep[5]);
-                        double duration = std::stod(sep[6]);
-                        double pole = -1;
-                        Sources S(expr, {pole, x, y, z, size, duration});
-                        config.sources.push_back(S);
+                            if (expr.front() == '"')
+                                expr.erase(0, 1);
+                            if (expr.back() == '"')
+                                expr.pop_back();
+
+                            double x = std::stod(sep[2]);
+                            double y = std::stod(sep[3]);
+                            double z = std::stod(sep[4]);
+                            double size = std::stod(sep[5]);
+                            double duration = std::stod(sep[6]);
+                            // double pole = -1;
+                            Sources S(expr, {-1, x, y, z, size, duration});
+                            config.sources.push_back(S);
+                        }
+                        else if (sep[0] == "file")
+                        {
+                            std::string filename = sep[1];
+                            if (filename.front() == '"')
+                                filename.erase(0, 1);
+                            if (filename.back() == '"')
+                                filename.pop_back();
+                            double x = std::stod(sep[2]);
+                            double y = std::stod(sep[3]);
+                            double z = std::stod(sep[4]);
+                            double size = std::stod(sep[5]);
+                            // double duration = std::stod(sep[6]);
+                            // double pole = -1;    
+                            Sources S("", {-1, x, y, z, size},io::parseCSVFile(filename,';'));
+                            config.sources.push_back(S);
+                        }
                     }
                 }
                 else if (key.find("observer") == 0)
                 {
-                   std::vector<std::string> sep = split(iter->second, ',');
+                    std::vector<std::string> sep = split(iter->second, ',');
                     double x = std::stod(sep[0]);
                     double y = std::stod(sep[1]);
                     double z = std::stod(sep[2]);
                     double size = std::stod(sep[3]);
-                    std::vector<double> obs = {x,y,z,size};
+                    std::vector<double> obs = {x, y, z, size};
                     config.observers.push_back(obs);
                 }
                 else if (key.find("initialCondtition") == 0)
@@ -193,7 +213,6 @@ namespace config
         {
             throw;
         }
-
         return config;
     }
 }

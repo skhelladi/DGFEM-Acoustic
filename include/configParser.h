@@ -10,19 +10,47 @@
 class Sources
 {
 public:
-    Sources(std::string f, std::vector<double> s)
+    Sources(std::string f, std::vector<double> s, std::vector<std::vector<double>> d = {})
     {
         formula = f;
         source = s;
+        data = d;
     }
+    // Sources(std::vector<std::vector<double>> d) {data=d;}
     Sources() {}
+
     std::string formula = "";
     std::vector<double> source;
     EQ_EDIT expression;
     double value(double t)
     {
-        return expression.value(true, formula, {{"t", t}});
+        bool go = (formula != "");
+        return expression.value(go, formula, {{"t", t}});
     }
+
+    double interpolate_value(double t)
+    {
+        // linear interpolation using dechotomy method to find interpolation bounds in the data table
+
+        size_t lo = 0, hi = (data.size() - 1), m(0);
+        double val(0), tmin(data[lo][0]),tmax(data[hi][0]);
+        while (lo <= hi && t >= tmin && t <= tmax)
+        {
+            m=(lo+hi)/2;
+
+            if(t<data[m][0]) hi=m;
+            else lo = m;
+
+            if(hi==lo+1) 
+            {
+                val = data[lo][1] + ((data[hi][1] - data[lo][1]) / (data[hi][0] - data[lo][0])) * (t - data[lo][0]);
+                return val;
+            }
+        }
+        return 0.0;
+    }
+
+    std::vector<std::vector<double>> data;
 };
 
 // class Observers
@@ -70,7 +98,6 @@ struct Config
 
     // Initial conditions
     std::vector<std::vector<double>> initConditions;
-    
 
     // Save file
     // std::string saveFile = "results.msh";

@@ -97,9 +97,9 @@ timeIntMethod=Runge-Kutta
 
 # Boundary condition:
 # /!\ The physical group name must match the Gmsh name (case sensitive)
+# MyPhysicalName = Absorbing or Reflecting
 Reflecting = Reflecting
 Absorbing = Absorbing
-MyPhysicalName = Absorbing
 
 # Number of thread
 numThreads=12
@@ -113,16 +113,18 @@ c0 = 100
 
 # Source:
 # name = fct,x,y,z,size,intensity,frequency,phase,duration
-# - fct supported = [monopole, dipole, quadrupole, udf]
-# - if fct = udf => name = fct,formula,x,y,z,size,duration (ex: formulat = 0.1 * sin(2 * pi * 50 * t))
+# - fct supported = [monopole, dipole, quadrupole, formula, file (coming soon)]
+# - if fct = formula => name = fct,"formula expr",x,y,z,size,duration (ex: formulat = 0.1 * sin(2 * pi * 50 * t))
+# - if fct = file => name = fct,"filename",x,y,z,size
 # - (x,y,z) = source position
 # - intensity = source intensity
 # - frequency = source frequency
 # NB: Extended source or Multiple sources are supported.
 #     (source1 = ..., source2 = ...) indice must change.
-# source1 = monopole, 0.0,0.0,0.0, 0.1, 0.1,50,0,0.1
-source1 = udf, "0.1 * sin(2 * pi * 50 * t)", 0.0,0.0,0.0, 0.1, 0.1
-# source2 = udf, "-0.1 * sin(2 * pi * 50 * t)", -0.5,0.0,0.0, 0.1, 0.1
+source1 = formula, "0.1 * sin(2 * pi * 50 * t)", 0.0,0.0,0.0, 0.1, 0.1
+source2 = monopole, 0.0,0.0,0.0, 0.1, 0.1,50,0,0.1
+#source3 = file,"data/data.csv", 0.0,0.0,0.0, 0.1
+# source4 = udf, "-0.1 * sin(2 * pi * 50 * t)", -0.5,0.0,0.0, 0.1, 0.1
 
 # Initial condition:
 # name = gaussian,x,y,z, size, amplitude
@@ -137,7 +139,7 @@ source1 = udf, "0.1 * sin(2 * pi * 50 * t)", 0.0,0.0,0.0, 0.1, 0.1
 # name = x,y,z, size
 # - (x,y,z) = position
 # NB: Multiple observers are supported and recursively added.
-#     (observer1 = ..., observer2 = ...)
+#     (observer1 = ...; observer2 = ...)
 observer1 = 2.11792,0.00340081,0.0,0.1
 observer2 = -2.11792,0.00340081,0.0,0.1
 

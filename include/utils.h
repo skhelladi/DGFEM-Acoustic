@@ -1,10 +1,10 @@
 #ifndef DGALERKIN_UTILS_H
 #define DGALERKIN_UTILS_H
 
+#include <fstream>
 #include <iomanip>
 #include <iostream>
 #include <vector>
-#include <fstream>
 // #include<execution>
 // #include <assert.h>
 
@@ -37,47 +37,57 @@
 //////////////////////////////////////////////////////////////
 // using namespace std;
 
-
-
 namespace screen_display
 {
     void write_string(std::string text, std::string color = YELLOW);
 
-    void write_value(std::string name, double value, std::string unit="", std::string color=YELLOW);
-    
-    void write_value_r(std::string name, double value, std::string unit="", std::string color=YELLOW, size_t precision=3);
+    void write_value(std::string name, double value, std::string unit = "", std::string color = YELLOW);
+
+    void write_value_r(std::string name, double value, std::string unit = "", std::string color = YELLOW, size_t precision = 3);
 
     bool write_if_false(const bool assertion, const char *msg);
 
-    template<typename T> void write_vector_to_file(std::string file_name, std::vector<T> vec, size_t offset=3)
+    template <typename T>
+    void write_vector_to_file(std::string file_name, std::vector<T> vec, size_t offset = 3)
     {
         std::ofstream outfile(file_name.c_str());
-        write_value("writing value in "+file_name+" - vector size",vec.size()/offset,"",BLUE);
-        for(size_t i=0;i<vec.size();i+=offset)
+        write_value("writing value in " + file_name + " - vector size", vec.size() / offset, "", BLUE);
+        for (size_t i = 0; i < vec.size(); i += offset)
         {
-           for(size_t j=0;j<offset;j++)
-                outfile<<vec[i+j]<<"\t";
-           outfile<<std::endl;      
+            for (size_t j = 0; j < offset; j++)
+                outfile << vec[i + j] << "\t";
+            outfile << std::endl;
         }
 
         outfile.close();
     }
 
-    template<typename T> void write_matrix_to_file(std::string file_name, std::vector<std::vector<T>> mat)
+    template <typename T>
+    void write_matrix_to_file(std::string file_name, std::vector<std::vector<T>> mat)
     {
         std::ofstream outfile(file_name.c_str());
-        write_string("writing value in "+file_name);
-        std::cout<<"Dimensions: "<<mat.size()<<"x"<<mat[0].size()<<std::endl;
-        for(size_t i=0;i<mat.size();i++)
+        write_string("writing value in " + file_name);
+        std::cout << "Dimensions: " << mat.size() << "x" << mat[0].size() << std::endl;
+        for (size_t i = 0; i < mat.size(); i++)
         {
-           for(size_t j=0;j<mat[i].size();j++)
-                outfile<<mat[i][j]<<"\t";
-           outfile<<std::endl;      
+            for (size_t j = 0; j < mat[i].size(); j++)
+                outfile << mat[i][j] << "\t";
+            outfile << std::endl;
         }
 
         outfile.close();
     }
 
+}
+
+namespace io
+{
+    /**
+     * Reads csv file into table, exported as a vector of vector of doubles.
+     * @param inputFileName input file name (full path).
+     * @return data as vector of vector of doubles.
+     */
+    std::vector<std::vector<double>> parseCSVFile(std::string inputFileName, char separator);
 
 }
 /////////////////////////

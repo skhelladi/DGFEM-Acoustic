@@ -1,6 +1,6 @@
-#include <iostream>
-#include <iomanip>
 #include <Eigen/Dense>
+#include <iomanip>
+#include <iostream>
 
 #include "utils.h"
 
@@ -101,7 +101,7 @@ namespace screen_display
         if (!assertion)
         {
             // endl to flush
-            write_string(msg,RED);
+            write_string(msg, RED);
         }
         return assertion;
     }
@@ -114,13 +114,61 @@ namespace screen_display
     //     {
     //        for(size_t j=0;j<offset;j++)
     //             outfile<<vec[i+j]<<"\t";
-    //        outfile<<std::endl;      
+    //        outfile<<std::endl;
     //     }
 
     //     outfile.close();
     // }
 }
 ///////////////////////
+namespace io
+{
+    /**
+     * Reads csv file into table, exported as a vector of vector of doubles.
+     * @param inputFileName input file name (full path).
+     * @return data as vector of vector of doubles.
+     */
+    std::vector<std::vector<double>> parseCSVFile(std::string inputFileName, char separator)
+    {
+        std::vector<std::vector<double>> data;
+        std::ifstream inputFile(inputFileName);
+        int l = 0;
+
+        while (inputFile)
+        {
+            l++;
+            std::string s;
+            if (!getline(inputFile, s))
+                break;
+
+            if (s[0] != '#' && l != 1)
+            {
+                std::istringstream ss(s);
+                std::vector<double> record;
+
+                while (ss)
+                {
+                    std::string line;
+                    if (!getline(ss, line, separator))
+                        break;
+
+                    double value = stof(line);
+                    record.push_back(value);
+                }
+
+                data.push_back(record);
+            }
+        }
+
+        if (!inputFile.eof())
+        {
+            std::cerr << "Could not read file " << inputFileName << "\n";
+            std::__throw_invalid_argument("File not found.");
+        }
+
+        return data;
+    }
+}
 
 // Lapack with direct calling to fortran interface.
 // => Migrate to Lapacke (conflict with Gmsh, segmentation fault)
