@@ -28,6 +28,14 @@ extern "C"
 
 //! added by Sofiane KHELLADI in 11/03/2022 /////////////////////
 
+std::string fileExtension(std::string file)
+{
+
+    std::size_t found = file.find_last_of(".");
+    return file.substr(found + 1);
+}
+
+
 namespace screen_display
 {
     void write_string(std::string text, std::string color)
@@ -165,6 +173,83 @@ namespace io
             std::cerr << "Could not read file " << inputFileName << "\n";
             std::__throw_invalid_argument("File not found.");
         }
+
+        return data;
+    }
+
+    void writeWave(std::vector<float> V, std::string filename, uint32_t sample_rate, uint16_t bits_per_sample, uint16_t channel_number, size_t nb_sequence)
+    {
+        wave::File write_file;
+        // uint32_t sample_rate = 10000;//V.size();
+        // uint16_t bits_per_sample = 16;
+        // uint16_t channel_number = 1;
+        // filename += ".wav";
+
+        std::vector<float> content;
+
+        for (size_t i = 0; i < nb_sequence; i++)
+            for (auto v : V)
+            {
+                content.push_back(v);
+            }
+
+        wave::Error err = write_file.Open(filename, wave::kOut);
+        if (err)
+        {
+            Fatal_Error("Something went wrong in out open")
+        }
+        write_file.set_sample_rate(sample_rate);
+        write_file.set_bits_per_sample(bits_per_sample);
+        write_file.set_channel_number(channel_number);
+
+        err = write_file.Write(content);
+        if (err)
+        {
+            Fatal_Error("Something went wrong in write")
+        }
+    }
+
+    void readWave(std::string filename, std::vector<float> &V, uint32_t &sample_rate)
+    {
+        wave::File read_file;
+        wave::Error err = read_file.Open(filename, wave::kIn);
+        if (err)
+        {
+            Fatal_Error("Something went wrong in out open")
+        }
+
+        // ASSERT_EQ(read_file.sample_rate(), 44100);
+        // ASSERT_EQ(read_file.bits_per_sample(), 16);
+        // ASSERT_EQ(read_file.channel_number(), 2);
+        sample_rate = read_file.sample_rate();
+        err = read_file.Read(&V);
+        if (err)
+        {
+            Fatal_Error("Something went wrong in read")
+        }
+
+        std::cout << "source file="<< filename << std::endl;
+        std::cout << "sample_rate=" << read_file.sample_rate() << std::endl;
+        std::cout << "bits_per_sample=" << read_file.bits_per_sample() << std::endl;
+        std::cout << "channel_number=" << read_file.channel_number() << std::endl;
+    }
+
+    std::vector<std::vector<double>> parseWAVEFile(std::string inputFileName)
+    {
+        std::vector<std::vector<double>> data;
+        uint32_t sample_rate;
+        std::vector<float> V;
+
+        readWave(inputFileName,V,sample_rate);
+        double timeStep = 1.0/sample_rate;
+        double time(0);
+        for(auto v:V)
+        {
+          data.push_back({time,v});
+          time += timeStep;
+        }
+
+        // writeWave(V,"data/data_write.wav",sample_rate,16,1,1);
 
         return data;
     }

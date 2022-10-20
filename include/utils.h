@@ -5,6 +5,11 @@
 #include <iomanip>
 #include <iostream>
 #include <vector>
+
+#include "file.h"
+#include "err.h"
+
+
 // #include<execution>
 // #include <assert.h>
 
@@ -36,6 +41,8 @@
 
 //////////////////////////////////////////////////////////////
 // using namespace std;
+
+std::string fileExtension(std::string file);
 
 namespace screen_display
 {
@@ -88,7 +95,9 @@ namespace io
      * @return data as vector of vector of doubles.
      */
     std::vector<std::vector<double>> parseCSVFile(std::string inputFileName, char separator);
-
+    void writeWave(std::vector<float> V, std::string filename, uint32_t sample_rate, uint16_t bits_per_sample=16, uint16_t channel_number=1, size_t nb_sequence=1);
+    void readWave(std::string filename, std::vector<float> &V, uint32_t &sample_rate);
+    std::vector<std::vector<double>> parseWAVEFile(std::string inputFileName);
 }
 /////////////////////////
 

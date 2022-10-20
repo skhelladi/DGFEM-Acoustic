@@ -73,7 +73,7 @@ namespace config
                 if (key.find("source") == 0)
                 {
                     std::vector<std::string> sep = split(iter->second, ',');
-                    
+
                     if (sep[0] != "formula" && sep[0] != "file")
                     {
                         double x = std::stod(sep[1]);
@@ -116,7 +116,7 @@ namespace config
                         }
                     }
                     else
-                    { 
+                    {
 
                         if (sep[0] == "formula")
                         {
@@ -148,9 +148,23 @@ namespace config
                             double z = std::stod(sep[4]);
                             double size = std::stod(sep[5]);
                             // double duration = std::stod(sep[6]);
-                            // double pole = -1;    
-                            Sources S("", {-1, x, y, z, size},io::parseCSVFile(filename,';'));
-                            config.sources.push_back(S);
+                            // double pole = -1;
+                            if (fileExtension(filename) == "csv")
+                            {
+                                Sources S("", {-1, x, y, z, size}, io::parseCSVFile(filename, ';'));
+                                config.sources.push_back(S);
+                            }
+                            else if (fileExtension(filename) == "wav")
+                            {
+                                Sources S("", {-1, x, y, z, size}, io::parseWAVEFile(filename));
+                                config.sources.push_back(S);
+                            }
+                            else
+                            {
+                                Fatal_Error("Not supported data")
+                            }
+
+                            // getchar();
                         }
                     }
                 }

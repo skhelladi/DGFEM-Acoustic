@@ -1,10 +1,11 @@
-#include <configParser.h>
 #include <Mesh.h>
+#include <configParser.h>
 
 #ifndef DGALERKIN_SOLVER_H
 #define DGALERKIN_SOLVER_H
 
-namespace solver {
+namespace solver
+{
     /**
      * Solve using forward explicit scheme. O(h)
      *
@@ -22,6 +23,9 @@ namespace solver {
      * @param config
      */
     void rungeKutta(std::vector<std::vector<double>> &u, Mesh &mesh, Config config);
+
+    // std::vector<std::vector<float>> data4wave;
+
 }
 
 #endif

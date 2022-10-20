@@ -113,9 +113,10 @@ c0 = 100
 
 # Source:
 # name = fct,x,y,z,size,intensity,frequency,phase,duration
-# - fct supported = [monopole, dipole, quadrupole, formula, file (coming soon)]
+# - fct supported = [monopole, dipole, quadrupole, formula, file (csv, wav)]
 # - if fct = formula => name = fct,"formula expr",x,y,z,size,duration (ex: formulat = 0.1 * sin(2 * pi * 50 * t))
 # - if fct = file => name = fct,"filename",x,y,z,size
+#	suported file formats are : csv, wav
 # - (x,y,z) = source position
 # - intensity = source intensity
 # - frequency = source frequency
@@ -124,6 +125,7 @@ c0 = 100
 source1 = formula, "0.1 * sin(2 * pi * 50 * t)", 0.0,0.0,0.0, 0.1, 0.1
 source2 = monopole, 0.0,0.0,0.0, 0.1, 0.1,50,0,0.1
 source3 = file,"data/data.csv", 0.0,0.0,0.0, 0.1
+source4 = file,"data/data.wav", 0.0,0.0,0.0, 0.1
 # source4 = udf, "-0.1 * sin(2 * pi * 50 * t)", -0.5,0.0,0.0, 0.1, 0.1
 
 # Initial condition:

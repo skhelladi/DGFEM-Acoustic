@@ -23,6 +23,8 @@ namespace solver
     std::vector<double> elStiffvector;
     std::vector<std::vector<std::vector<double>>> Flux;
 
+    std::vector<std::vector<float>> data4wave;
+
     /**
      * Perform a numerical step: u[t+1] = dt*M^-1*(S[u[t]]-F[u[t]]) + beta*u[t]
      * for all elements in mesh object.
@@ -139,6 +141,8 @@ namespace solver
         outfile << "time;res_p;res_rho;res_vx;res_vy;res_vz;elapsed_time" << std::endl;
 
         std::vector<std::ofstream> obs_outfile(config.observers.size());
+        data4wave.clear();
+        data4wave.resize(config.observers.size());
         for (int obs = 0; obs < config.observers.size(); ++obs)
         {
             std::string filename = "results/observers" + std::to_string(obs + 1) + ".txt";
@@ -192,7 +196,7 @@ namespace solver
 
             for (int src = 0; src < config.sources.size(); ++src)
             {
-                if (config.sources[src].formula == "")
+                if (config.sources[src].formula == "" && config.sources[src].data.empty())
                 {
                     double amp = config.sources[src].source[5];
                     double freq = config.sources[src].source[6];
@@ -204,10 +208,18 @@ namespace solver
                 }
                 else
                 {
-                    double duration = config.sources[src].source[5];
-                    if (t < duration)
+                    if (config.sources[src].data.empty())
+                    {
+                        double duration = config.sources[src].source[5];
+                        if (t < duration)
+                            for (int n = 0; n < srcIndices[src].size(); ++n)
+                                u[0][srcIndices[src][n]] = config.sources[src].value(t);
+                    }
+                    else
+                    {
                         for (int n = 0; n < srcIndices[src].size(); ++n)
-                            u[0][srcIndices[src][n]] = config.sources[src].value(t);
+                            u[0][srcIndices[src][n]] = config.sources[src].interpolate_value(t);
+                    }
                 }
             }
 
@@ -274,9 +286,13 @@ namespace solver
                 v[0] /= w_sum;
                 v[1] /= w_sum;
                 v[2] /= w_sum;
+                data4wave[obs].push_back(p);
                 obs_outfile[obs] << t << ";" << rho << ";" << p << ";" << v[0] << ";" << v[1] << ";" << v[2] << std::endl;
             }
         }
+        for (int obs = 0; obs < config.observers.size(); ++obs)
+            io::writeWave(data4wave[obs], "results/observer_" + std::to_string(obs + 1) + ".wav", 1.0 / config.timeStep, 16, 1, 1);
+
         outfile.close();
         for (int obs = 0; obs < config.observers.size(); ++obs)
             obs_outfile[obs].close();
@@ -381,7 +397,8 @@ namespace solver
         outfile << "time;log(res_p);log(res_rho);log(res_vx);log(res_vy);log(res_vz);elapsed_time(s)" << std::endl;
 
         std::vector<std::ofstream> obs_outfile(config.observers.size());
-
+        data4wave.clear();
+        data4wave.resize(config.observers.size());
         for (int obs = 0; obs < config.observers.size(); ++obs)
         {
             std::string filename = "results/observers" + std::to_string(obs + 1) + ".txt";
@@ -453,10 +470,11 @@ namespace solver
                         if (t < duration)
                             for (int n = 0; n < srcIndices[src].size(); ++n)
                                 u[0][srcIndices[src][n]] = config.sources[src].value(t);
-                    }else 
+                    }
+                    else
                     {
-                       for (int n = 0; n < srcIndices[src].size(); ++n)
-                                u[0][srcIndices[src][n]] = config.sources[src].interpolate_value(t); 
+                        for (int n = 0; n < srcIndices[src].size(); ++n)
+                            u[0][srcIndices[src][n]] = config.sources[src].interpolate_value(t);
                     }
                 }
             }
@@ -547,9 +565,13 @@ namespace solver
                 v[0] /= w_sum;
                 v[1] /= w_sum;
                 v[2] /= w_sum;
+                data4wave[obs].push_back(p);
                 obs_outfile[obs] << t << ";" << rho << ";" << p << ";" << v[0] << ";" << v[1] << ";" << v[2] << std::endl;
             }
         }
+        for (int obs = 0; obs < config.observers.size(); ++obs)
+            io::writeWave(data4wave[obs], "results/observer_" + std::to_string(obs + 1) + ".wav", 1.0 / config.timeStep, 16, 1, 1);
+
         outfile.close();
         for (int obs = 0; obs < config.observers.size(); ++obs)
             obs_outfile[obs].close();
