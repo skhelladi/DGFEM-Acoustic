@@ -1,4 +1,3 @@
-# programs
 SET(SRCS
 	dgalerkin.cpp
 	configParser.cpp

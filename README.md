@@ -38,7 +38,12 @@ VTK (v9.x)
 ```
 
 ### Installing
-
+```
+git clone https://github.com/skhelladi/DGFEM-CAA.git
+cd DGFEM-CAA
+sh build.sh
+```
+or use
 ```
 git clone https://github.com/skhelladi/DGFEM-CAA.git
 cd DGFEM-CAA
@@ -46,14 +51,6 @@ mkdir build && cd build
 cmake ../ -DCMAKE_BUILD_TYPE=Release  -G "Unix Makefiles" -DGMSH_INCLUDE_DIRS="../gmsh-4.10.5-Linux64-sdk/include" -DGMSH_LIBRARIES="../gmsh-4.10.5-Linux64-sdk/lib/libgmsh.so" -DGMSH_EXECUTABLE="../gmsh-4.10.5-Linux64-sdk/bin/gmsh" -DEIGEN_INCLUDE_DIRS="/usr/include/eigen3"
 make -j4
 ```
-
-or simply use build.sh 
-```
-git clone https://github.com/skhelladi/DGFEM-CAA.git
-cd DGFEM-CAA
-sh build.sh
-```
-
 
 ## Running the tests
 Once the sources sucessfully build, you can start using with the solver. It required two arguments: a mesh file created with Gmsh and a config file containing the solver options. Examples of mesh files and config files are given [here](https://github.com/skhelladi/DGFEM-CAA/tree/development/doc).
