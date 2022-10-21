@@ -35,7 +35,6 @@ std::string fileExtension(std::string file)
     return file.substr(found + 1);
 }
 
-
 namespace screen_display
 {
     void write_string(std::string text, std::string color)
@@ -179,6 +178,8 @@ namespace io
 
     void writeWave(std::vector<float> V, std::string filename, uint32_t sample_rate, uint16_t bits_per_sample, uint16_t channel_number, size_t nb_sequence)
     {
+        screen_display::write_string("Write WAVE file: '" + filename + "'");
+
         wave::File write_file;
         // uint32_t sample_rate = 10000;//V.size();
         // uint16_t bits_per_sample = 16;
@@ -211,6 +212,8 @@ namespace io
 
     void readWave(std::string filename, std::vector<float> &V, uint32_t &sample_rate)
     {
+       
+        screen_display::write_string("Read WAVE source file: '" + filename + "'");
         wave::File read_file;
         wave::Error err = read_file.Open(filename, wave::kIn);
         if (err)
@@ -228,7 +231,7 @@ namespace io
             Fatal_Error("Something went wrong in read")
         }
 
-        std::cout << "source file="<< filename << std::endl;
+        std::cout << "source file=" << filename << std::endl;
         std::cout << "sample_rate=" << read_file.sample_rate() << std::endl;
         std::cout << "bits_per_sample=" << read_file.bits_per_sample() << std::endl;
         std::cout << "channel_number=" << read_file.channel_number() << std::endl;
@@ -240,18 +243,56 @@ namespace io
         uint32_t sample_rate;
         std::vector<float> V;
 
-        readWave(inputFileName,V,sample_rate);
-        double timeStep = 1.0/sample_rate;
+        readWave(inputFileName, V, sample_rate);
+        double timeStep = 1.0 / sample_rate;
         double time(0);
-        for(auto v:V)
+        for (auto v : V)
         {
-          data.push_back({time,v});
-          time += timeStep;
+            data.push_back({time, v});
+            time += timeStep;
         }
 
         // writeWave(V,"data/data_write.wav",sample_rate,16,1,1);
 
         return data;
+    }
+
+    void writeFFT(std::vector<float> V, double timeStep, std::string filename)
+    {
+        screen_display::write_string("Write FFT files: '" + filename + "'");
+        size_t nb_observer_time = getNearestLowerPowerOf2(V.size());
+        Eigen::MatrixXd pt(nb_observer_time, 2);
+
+        double sum = 0.0;
+
+        for (size_t i = 0; i < nb_observer_time; i++)
+        {
+            pt(i, 0) = i * timeStep;
+            double p = V[i];
+            pt(i, 1) = p;
+            sum += pt(i, 1);
+        }
+        //! mean suppression /////////////
+
+        sum /= pt.rows();
+        pt.col(1) = pt.col(1).array() - sum;
+        double I_p2 = 0.0;
+        double dt;
+        for (size_t i = 1; i < nb_observer_time; i++)
+        {
+            dt = timeStep;
+            I_p2 += 0.5 * (pow(pt(i - 1, 1), 2) + pow(pt(i, 1), 2)) * dt;
+        }
+        //! mean suppression /////////////
+        double T = timeStep * V.size();
+        double p2_eff = (1.0 / T * I_p2) / nb_observer_time;
+        double p0 = 2.0e-5;
+        double SPL = 10.0 * log10(p2_eff / pow(p0, 2));
+
+        std::string fft_filename = filename + "_fft.txt";
+        std::string psd_filename = filename + "_psd.txt";
+        WriteFFT(pt, fft_filename);
+        WritePSD(pt, psd_filename);
     }
 }
 

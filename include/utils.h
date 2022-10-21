@@ -8,6 +8,9 @@
 
 #include "file.h"
 #include "err.h"
+#include "configParser.h"
+#include "fft.h"
+
 
 
 // #include<execution>
@@ -94,10 +97,11 @@ namespace io
      * @param inputFileName input file name (full path).
      * @return data as vector of vector of doubles.
      */
-    std::vector<std::vector<double>> parseCSVFile(std::string inputFileName, char separator);
+    std::vector<std::vector<double>> parseCSVFile(std::string inputFileName, char separator);    
+    std::vector<std::vector<double>> parseWAVEFile(std::string inputFileName);
+    void writeFFT(std::vector<float> V, double timeStep, std::string filename);
     void writeWave(std::vector<float> V, std::string filename, uint32_t sample_rate, uint16_t bits_per_sample=16, uint16_t channel_number=1, size_t nb_sequence=1);
     void readWave(std::string filename, std::vector<float> &V, uint32_t &sample_rate);
-    std::vector<std::vector<double>> parseWAVEFile(std::string inputFileName);
 }
 /////////////////////////
 

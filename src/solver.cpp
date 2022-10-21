@@ -291,7 +291,10 @@ namespace solver
             }
         }
         for (int obs = 0; obs < config.observers.size(); ++obs)
+        {
             io::writeWave(data4wave[obs], "results/observer_" + std::to_string(obs + 1) + ".wav", 1.0 / config.timeStep, 16, 1, 1);
+            io::writeFFT(data4wave[obs],config.timeStep,"results/observer_" + std::to_string(obs + 1));
+        }
 
         outfile.close();
         for (int obs = 0; obs < config.observers.size(); ++obs)
@@ -570,7 +573,10 @@ namespace solver
             }
         }
         for (int obs = 0; obs < config.observers.size(); ++obs)
+        {
             io::writeWave(data4wave[obs], "results/observer_" + std::to_string(obs + 1) + ".wav", 1.0 / config.timeStep, 16, 1, 1);
+            io::writeFFT(data4wave[obs],config.timeStep,"results/observer_" + std::to_string(obs + 1));
+        }
 
         outfile.close();
         for (int obs = 0; obs < config.observers.size(); ++obs)
