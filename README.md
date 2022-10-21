@@ -1,7 +1,7 @@
 # DGFEM for Acoustic Wave Propagation 
 
-[![version](https://img.shields.io/badge/version-1.3.4-red)](https://github.com/skhelladi/DGFEM-CAA/releases/tag/v1.3.4) 
-[![compilers](https://img.shields.io/badge/c++-17%20|%2020-27ae60.svg)](https://github.com/skhelladi/DGFEM-CAA/releases/tag/v1.3.4) 
+[![version](https://img.shields.io/badge/version-1.3.5-red)](https://github.com/skhelladi/DGFEM-CAA/releases/tag/v1.3.5) 
+[![compilers](https://img.shields.io/badge/c++-17%20|%2020-27ae60.svg)](https://github.com/skhelladi/DGFEM-CAA/releases/tag/v1.3.5) 
 
 This repository implements a discontinuous Galerkin finite element method (DGFEM) applied to the linearized Euler equations and the acoustic 
 perturbation equations. 
@@ -11,9 +11,10 @@ The solver is based on [GMSH](http://gmsh.info/) library and supports a wide ran
 - 4-th order Runge-Kutta
 - High order elements
 - Absorbing and reflecting boundaries
-- Multiple sources support: monopoles, dipoles, quadrupoles and user defined analytical formulation sources 
+- Multiple sources support: monopoles, dipoles, quadrupoles, user defined analytical formulation sources and external data (csv and sound 'wave' file supported) 
 - Complex geometry and unstructured grid (only triangles (2D) and tetrahedrons (3D) elements are supported)
-- VTK Post-processing (use [Paraview](https://www.paraview.org/)) 
+- VTK post-processing (use [Paraview](https://www.paraview.org/)) 
+- User defined obervers position post-processing (text data time variables, Fast Fourier Transform, Pressure Power Spectral Density and sound 'wave' files)
 
 <!-- | Auditorium     | Isosurfaces     | Bulk|
 | ------------- |:-------------:| :-------------:| 
