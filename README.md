@@ -35,6 +35,7 @@ Blas
 OpenMP
 Libtbb
 VTK (v9.x)
+FFTW
 ```
 
 ### Installing
