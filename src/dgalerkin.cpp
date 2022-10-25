@@ -25,21 +25,25 @@ int main(int argc, char **argv)
     // s.algorithm_strategy = __gnu_parallel::force_parallel;
     // __gnu_parallel::_Settings::set(s);
 
-    if (argc != 3)
+    if (argc != 2)
     {
         return E2BIG;
     }
-    std::string msh_name = argv[1];
-    std::string config_name = argv[2];
+    std::string config_name = argv[1];
 
     gmsh::initialize();
     gmsh::option::setNumber("General.Terminal", 1.0);
-    gmsh::open(msh_name);
 
-    Config config = config::parseConfig(config_name);
+    Config config;
+
+    if (fileExtension(config_name) == "conf")
+        config = config::parseConfig(config_name);
+    if (fileExtension(config_name) == "json")
+        config = config::parseJSON(config_name);    
+
     gmsh::logger::write("Config loaded : " + config_name);
 
-    Mesh mesh(msh_name, config);
+    Mesh mesh(config);
 
     /**
      * Initialize the solution:
@@ -72,6 +76,7 @@ int main(int argc, char **argv)
         solver::forwardEuler(u, mesh, config);
     else if (config.timeIntMethod == "Runge-Kutta")
         solver::rungeKutta(u, mesh, config);
+    else Fatal_Error("Time integration method error")    
 
     mesh.writePVD("results.pvd");
     gmsh::finalize();

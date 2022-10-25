@@ -1,7 +1,7 @@
 # DGFEM for Acoustic Wave Propagation 
 
-[![version](https://img.shields.io/badge/version-1.3.5-red)](https://github.com/skhelladi/DGFEM-CAA/releases/tag/v1.3.5) 
-[![compilers](https://img.shields.io/badge/c++-17%20|%2020-27ae60.svg)](https://github.com/skhelladi/DGFEM-CAA/releases/tag/v1.3.5) 
+[![version](https://img.shields.io/badge/version-1.3.6-red)](https://github.com/skhelladi/DGFEM-CAA/releases/tag/v1.3.6) 
+[![compilers](https://img.shields.io/badge/c++-17%20|%2020-27ae60.svg)](https://github.com/skhelladi/DGFEM-CAA/releases/tag/v1.3.6) 
 
 This repository implements a discontinuous Galerkin finite element method (DGFEM) applied to the linearized Euler equations and the acoustic 
 perturbation equations. 
@@ -11,6 +11,7 @@ The solver is based on [GMSH](http://gmsh.info/) library and supports a wide ran
 - 4-th order Runge-Kutta
 - High order elements
 - Absorbing and reflecting boundaries
+- Support 'json' format configartion file
 - Multiple sources support: monopoles, dipoles, quadrupoles, user defined analytical formulation sources and external data (csv and sound 'wave' file supported) 
 - Complex geometry and unstructured grid (only triangles (2D) and tetrahedrons (3D) elements are supported)
 - VTK post-processing (use [Paraview](https://www.paraview.org/)) 
@@ -58,7 +59,13 @@ Once the sources sucessfully build, you can start using with the solver. It requ
 
 ```
 cd bin
-./dgalerkin mymesh.msh myconfig.conf
+./dgalerkin myconfig.conf
+```
+or
+
+```
+cd bin
+./dgalerkin myconfig.json
 ```
 
 ### Minimal working example
@@ -67,7 +74,13 @@ cd bin
 
 ```
 cd build/bin
-./dgalerkin ../../doc/2d/square.msh ../../doc/config/config.conf 
+./dgalerkin ../../doc/config/Square.conf 
+```
+or 
+
+```
+cd build/bin
+./dgalerkin ../../doc/config/Square.json 
 ```
 
 or configure run_caa batch file with the right mesh and configurations files.
@@ -76,8 +89,12 @@ or configure run_caa batch file with the right mesh and configurations files.
 sh run_caa 
 ```
 ## Configuration file example
+### Text format file
 <!-- python style text highlight -->
 ```python 
+
+meshFileName = doc/2d/square2.msh
+
 # Initial, final time and time step(t>0)
 timeStart=0
 timeEnd=0.05
@@ -144,9 +161,118 @@ source4 = file,"data/data.wav", 0.0,0.0,0.0, 0.1
 observer1 = 2.11792,0.00340081,0.0,0.1
 observer2 = -2.11792,0.00340081,0.0,0.1
 
-
 ```
-
+### Json format file
+<!-- python style text highlight -->
+```json 
+{
+	"mesh": {
+		"File": "doc/2d/square2.msh",
+		"BC": {
+			"number": 2,
+			"boundary1": {
+				"name": "Abs",
+				"type": "Absorbing"
+			},
+			"boundary2": {
+				"name": "Ref",
+				"type": "Reflecting"
+			}
+		}
+	},
+	"solver": {
+		"time": {
+			"start": 0.0,
+			"end": 0.05,
+			"step": 5e-05,
+			"rate": 0.001
+		},
+		"elementType": "Lagrange",
+		"timeIntMethod": "Runge-Kutta",
+		"numThreads": 12
+	},
+	"initialization": {
+		"meanFlow": {
+			"vx": 30.0,
+			"vy": 0.0,
+			"vz": 0.0,
+			"rho": 1.225,
+			"c": 100.0
+		},
+		"number": 2,
+		"initialCondition1": {
+			"type": "gaussian",
+			"x": 0.2,
+			"y": 0.0,
+			"z": 0.0,
+			"size": 1.0,
+			"amplitude": 1.0
+		},
+		"initialCondition2": {
+			"type": "gaussian",
+			"x": -0.2,
+			"y": 0.0,
+			"z": 0.0,
+			"size": 1.0,
+			"amplitude": 1.0
+		}
+	},
+	"observers": {
+		"number": 2,
+		"observer1": {
+			"x": 2.11792,
+			"y": 0.00340081,
+			"z": 0.0,
+			"size": 0.1
+		},
+		"observer2": {
+			"x": -2.11792,
+			"y": 0.00340081,
+			"z": 0.0,
+			"size": 0.1
+		}
+	},
+	"sources": {
+		"number": 3,
+		"source1": {
+			"type": "formula",
+			"fct": "0.1 * sin(2 * pi * 50 * t)",
+			"x": 0.0,
+			"y": 0.0,
+			"z": 0.0,
+			"size": 0.1,
+			"amplitude": 0.0,
+			"frequency": 0.0,
+			"phase": 0.0,
+			"duration": 0.05
+		},
+		"source2": {
+			"type": "file",
+			"fct": "data/data2.wav",
+			"x": 0.0,
+			"y": 0.0,
+			"z": 0.0,
+			"size": 0.1,
+			"amplitude": 0.0,
+			"frequency": 0.0,
+			"phase": 0.0,
+			"duration": 0.05
+		},
+		"source3": {
+			"type": "monopole",
+			"fct": "",
+			"x": 0.0,
+			"y": 0.0,
+			"z": 0.0,
+			"size": 0.1,
+			"amplitude": 0.1,
+			"frequency": 50.0,
+			"phase": 0.0,
+			"duration": 0.05
+		}
+	}
+}
+```
 ## Author
 * Sofiane Khelladi
 

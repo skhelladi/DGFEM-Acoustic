@@ -97,6 +97,15 @@ else
 	echo "libfftw3-dev installed.";
 fi
 
+dpkg -s nlohmann-json3-dev > /dev/null 2>&1;
+if [ $? -eq 0 ]; then
+	echo "nlohmann-json3-dev found.";
+else
+	echo "nlohmann-json3-dev not found, installing...";
+	sudo apt-get -y install nlohmann-json3-dev;
+	echo "nlohmann-json3-dev installed.";
+fi
+
 if [ ! -d "3rdParty/gmsh" ]; then
 	echo "Gmsh not found, installing...";
 	wget http://gmsh.info/bin/Linux/gmsh-4.10.5-Linux64-sdk.tgz

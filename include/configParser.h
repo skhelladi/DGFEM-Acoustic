@@ -3,8 +3,15 @@
 #include <map>
 #include <string>
 
+#include <nlohmann/json.hpp>
+
+
 #ifndef DGALERKIN_CONFIG_H
 #define DGALERKIN_CONFIG_H
+
+using json = nlohmann::json;
+using ordered_json=nlohmann::ordered_json;
+
 
 //! ////////////////////////////////////////////////////////////////
 class Sources
@@ -61,6 +68,10 @@ public:
 
 struct Config
 {
+    ordered_json jsonData;
+    
+    std::string meshFileName;
+    
     // Initial, final time and time step(t>0)
     double timeStart = 0;
     double timeEnd = 1;
@@ -106,6 +117,7 @@ struct Config
 namespace config
 {
     Config parseConfig(std::string name);
+    Config parseJSON(std::string name);
 }
 
 #endif

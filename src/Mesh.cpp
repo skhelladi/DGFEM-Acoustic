@@ -17,12 +17,14 @@
  * @name string File name
  * @config config Configuration object (content of the config parsed and load in memory)
  */
-Mesh::Mesh(std::string name, Config config) : name(name), config(config)
+Mesh::Mesh(Config config) : config(config)
 {
 
     /******************************
      *          Elements          *
      ******************************/
+
+    // meshFileName = config.meshFileName;
 
     screen_display::write_string("Load data", GREEN);
 

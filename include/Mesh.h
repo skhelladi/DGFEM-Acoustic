@@ -39,7 +39,7 @@ class Mesh
 {
 
 public:
-    Mesh(std::string name, Config config);
+    Mesh(Config config);
 
     /**
      * List of getters used for vector access and to improve readability.
@@ -217,7 +217,6 @@ public:
     void writePVD(std::string filename);
 
 private:
-    std::string name; // Associated mesh file string
     Config config;    // Configuration object
 
     int fc = 1;                               // Numerical flux coefficient
