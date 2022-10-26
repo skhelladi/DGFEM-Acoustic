@@ -52,14 +52,14 @@ else
 	echo "Lapack/Blas installed.";
 fi
 
-dpkg -s libtbb2 > /dev/null 2>&1;
-if [ $? -eq 0 ]; then
-	echo "TBB found.";
-else
-	echo "TBB not found, installing...";
-	sudo apt-get -y install libtbb2;
-	echo "TBB installed.";
-fi
+# dpkg -s libtbb2 > /dev/null 2>&1;
+# if [ $? -eq 0 ]; then
+# 	echo "TBB found.";
+# else
+# 	echo "TBB not found, installing...";
+# 	sudo apt-get -y install libtbb2;
+# 	echo "TBB installed.";
+# fi
 
 dpkg -s libglu1-mesa > /dev/null 2>&1;
 if [ $? -eq 0 ]; then

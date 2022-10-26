@@ -253,7 +253,7 @@ Mesh::Mesh(Config config) : config(config)
                         jacobian[i * m_elDim + j] = fJacobian(f, g, i, j);
                     }
                 }
-                std::copy(std::execution::par, &fUGradBasisFct(g, n), &fUGradBasisFct(g, n) + m_elDim, &fGradBasisFct(f, g, n));
+                std::copy(/*std::execution::par,*/ &fUGradBasisFct(g, n), &fUGradBasisFct(g, n) + m_elDim, &fGradBasisFct(f, g, n));
                 eigen::solve(jacobian.data(), &fGradBasisFct(f, g, n), m_elDim);
             }
         }
@@ -983,7 +983,7 @@ void Mesh::getUniqueFaceNodeTags()
     m_elFNodeTagsOrdered = m_elFNodeTags;
     // #pragma omp parallel for
     for (int i = 0; i < m_elFNodeTagsOrdered.size(); i += m_fNumNodes)
-        std::sort(std::execution::par, m_elFNodeTagsOrdered.begin() + i, m_elFNodeTagsOrdered.begin() + (i + m_fNumNodes));
+        std::sort(/*std::execution::par,*/ m_elFNodeTagsOrdered.begin() + i, m_elFNodeTagsOrdered.begin() + (i + m_fNumNodes));
 
     screen_display::write_string("get Unique Face Node Tags", RED);
 
@@ -1065,7 +1065,7 @@ void Mesh::getUniqueFaceNodeTags()
     // m_fNodeTagsOrdered.clear();
     m_fNodeTagsOrdered = m_fNodeTags;
     for (int i = 0; i < m_fNodeTagsOrdered.size(); i += m_fNumNodes)
-        std::sort(std::execution::par, m_fNodeTagsOrdered.begin() + i, m_fNodeTagsOrdered.begin() + (i + m_fNumNodes));
+        std::sort(/*std::execution::par,*/ m_fNodeTagsOrdered.begin() + i, m_fNodeTagsOrdered.begin() + (i + m_fNumNodes));
 
     screen_display::write_if_false(tmp == m_fNumNodes, "Bad dimension error...");
 

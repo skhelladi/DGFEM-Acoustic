@@ -15,7 +15,7 @@ SET(SRCS
 )
 
 ADD_EXECUTABLE(dgalerkin ${SRCS})
-TARGET_LINK_LIBRARIES(dgalerkin ${GMSH_LIBRARIES} ${LAPACKBLAS_LIBRARIES} ${VTK_LIBRARIES} -fopenmp -ltbb -lpthread -lwave)
+TARGET_LINK_LIBRARIES(dgalerkin ${GMSH_LIBRARIES} ${LAPACKBLAS_LIBRARIES} ${VTK_LIBRARIES} -fopenmp -lpthread -lwave) #-ltbb
 
 vtk_module_autoinit(
 	TARGETS dgalerkin
