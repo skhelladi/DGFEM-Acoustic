@@ -1,0 +1,57 @@
+{
+	"mesh": {
+		"File": "doc/2d/square2.msh",
+		"BC": {
+			"number": 1,
+			"boundary1": {
+				"name": "Abs",
+				"type": "Absorbing"
+			}
+		}
+	},
+	"solver": {
+		"time": {
+			"start": 0.0,
+			"end": 0.05,
+			"step": 5e-05,
+			"rate": 0.001
+		},
+		"elementType": "Lagrange",
+		"timeIntMethod": "Runge-Kutta",
+		"numThreads": 12
+	},
+	"initialization": {
+		"meanFlow": {
+			"vx": 30.0,
+			"vy": 0.0,
+			"vz": 0.0,
+			"rho": 1.225,
+			"c": 100.0
+		},
+		"number": 0
+	},
+	"observers": {
+		"number": 1,
+		"observer1": {
+			"x": 2.11792,
+			"y": 0.00340081,
+			"z": 0.0,
+			"size": 0.1
+		}
+	},
+	"sources": {
+		"number": 1,
+		"source1": {
+			"type": "formula",
+			"fct": "0.1 * sin(2 * pi * 50 * t)",
+			"x": 0.0,
+			"y": 0.0,
+			"z": 0.0,
+			"size": 0.1,
+			"amplitude": 0.0,
+			"frequency": 0.0,
+			"phase": 0.0,
+			"duration": 0.05
+		}
+	}
+}
