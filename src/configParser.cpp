@@ -191,7 +191,17 @@ namespace config
             }
 
             std::string physName;
-            gmsh::open(config.meshFileName);
+            std::ifstream mFile(config.meshFileName);
+            if (mFile.is_open())
+            {
+                gmsh::open(config.meshFileName);
+            }
+            else
+            {
+                std::string message = "Mesh file '"+config.meshFileName+"' not found or corrupted";
+                Fatal_Error(message.c_str())
+            }
+            mFile.close();
             gmsh::vectorpair m_physicalDimTags;
             int bcDim = gmsh::model::getDimension() - 1;
             gmsh::model::getPhysicalGroups(m_physicalDimTags, bcDim);
@@ -217,13 +227,14 @@ namespace config
             throw;
         }
         gmsh::logger::write("==================================================");
-        gmsh::logger::write("Simulation parameters : ");
-        gmsh::logger::write("Time step : " + std::to_string(config.timeStep));
-        gmsh::logger::write("Final time : " + std::to_string(config.timeEnd));
-        gmsh::logger::write("Mean flow velocity : (" + std::to_string(config.v0[0]) + "," + std::to_string(config.v0[1]) + "," + std::to_string(config.v0[2]) + ")");
-        gmsh::logger::write("Mean density : " + std::to_string(config.rho0));
-        gmsh::logger::write("Speed of sound : " + std::to_string(config.c0));
-        gmsh::logger::write("Solver : " + config.timeIntMethod);
+        gmsh::logger::write("Simulation parameters: ");
+        gmsh::logger::write("Time step: " + std::to_string(config.timeStep));
+        gmsh::logger::write("Final time: " + std::to_string(config.timeEnd));
+        gmsh::logger::write("Mean flow velocity: (" + std::to_string(config.v0[0]) + "," + std::to_string(config.v0[1]) + "," + std::to_string(config.v0[2]) + ")");
+        gmsh::logger::write("Mean density: " + std::to_string(config.rho0));
+        gmsh::logger::write("Speed of sound: " + std::to_string(config.c0));
+        gmsh::logger::write("Mesh file: " + config.meshFileName);
+        gmsh::logger::write("Solver: " + config.timeIntMethod);
 
         return config;
     }
@@ -241,7 +252,17 @@ namespace config
             config.meshFileName = config.jsonData["mesh"]["File"];
             int nbBC = config.jsonData["mesh"]["BC"]["number"];
             std::string physName;
-            gmsh::open(config.meshFileName);
+            std::ifstream mFile(config.meshFileName);
+            if (mFile.is_open())
+            {
+                gmsh::open(config.meshFileName);
+            }
+            else
+            {
+                std::string message = "Mesh file '"+config.meshFileName+"' not found or corrupted";
+                Fatal_Error(message.c_str())
+            }
+            mFile.close();
             gmsh::vectorpair m_physicalDimTags;
             int bcDim = gmsh::model::getDimension() - 1;
             gmsh::model::getPhysicalGroups(m_physicalDimTags, bcDim);
@@ -264,7 +285,7 @@ namespace config
                     gmsh::logger::write("Not specified or supported boundary conditions.");
                 }
             }
-            screen_display::write_string("Mesh loaded",GREEN);
+            screen_display::write_string("Mesh loaded", GREEN);
             // solver
 
             config.timeStart = config.jsonData["solver"]["time"]["start"];
@@ -275,7 +296,7 @@ namespace config
             config.timeIntMethod = config.jsonData["solver"]["timeIntMethod"];
             config.numThreads = config.jsonData["solver"]["numThreads"];
             config.numThreads = (config.numThreads == 1) ? 0 : config.numThreads;
-            screen_display::write_string("Solver parameters loaded",GREEN);
+            screen_display::write_string("Solver parameters loaded", GREEN);
             // initial conditions
             config.v0[0] = config.jsonData["initialization"]["meanFlow"]["vx"];
             config.v0[1] = config.jsonData["initialization"]["meanFlow"]["vy"];
@@ -299,7 +320,7 @@ namespace config
                 std::vector<double> init1 = {double(index), x, y, z, size, amp};
                 config.initConditions.push_back(init1);
             }
-            screen_display::write_string("Initial conditions loaded",GREEN);
+            screen_display::write_string("Initial conditions loaded", GREEN);
             // observers
             int nbObs = config.jsonData["observers"]["number"];
             for (int i = 0; i < nbObs; i++)
@@ -311,14 +332,14 @@ namespace config
                 std::vector<double> obs = {x, y, z, size};
                 config.observers.push_back(obs);
             }
-            screen_display::write_string("Observers coordinates loaded",GREEN);
-            
+            screen_display::write_string("Observers coordinates loaded", GREEN);
+
             // sources
             int nbSrc = config.jsonData["sources"]["number"];
             for (int i = 0; i < nbSrc; i++)
             {
                 std::string type = config.jsonData["sources"]["source" + std::to_string(i + 1)]["type"];
-                std::string fct  = config.jsonData["sources"]["source" + std::to_string(i + 1)]["fct"];
+                std::string fct = config.jsonData["sources"]["source" + std::to_string(i + 1)]["fct"];
                 double x = config.jsonData["sources"]["source" + std::to_string(i + 1)]["x"];
                 double y = config.jsonData["sources"]["source" + std::to_string(i + 1)]["y"];
                 double z = config.jsonData["sources"]["source" + std::to_string(i + 1)]["z"];
@@ -367,13 +388,13 @@ namespace config
                     if (type == "formula")
                     {
                         std::string expr = fct;
-                        expr.erase(std::remove_if(expr.begin(), expr.end(), isspace),expr.end());
+                        expr.erase(std::remove_if(expr.begin(), expr.end(), isspace), expr.end());
 
                         if (expr.front() == '"')
                             expr.erase(0, 1);
                         if (expr.back() == '"')
                             expr.pop_back();
-                            
+
                         Sources S(expr, {-1, x, y, z, size, duration});
                         config.sources.push_back(S);
                     }
@@ -405,21 +426,21 @@ namespace config
                     }
                 }
             }
-            screen_display::write_string("Sources loaded",GREEN);
-            
+            screen_display::write_string("Sources loaded", GREEN);
         }
         else
         {
             throw;
         }
         gmsh::logger::write("==================================================");
-        gmsh::logger::write("Simulation parameters : ");
-        gmsh::logger::write("Time step : " + std::to_string(config.timeStep));
-        gmsh::logger::write("Final time : " + std::to_string(config.timeEnd));
-        gmsh::logger::write("Mean flow velocity : (" + std::to_string(config.v0[0]) + "," + std::to_string(config.v0[1]) + "," + std::to_string(config.v0[2]) + ")");
-        gmsh::logger::write("Mean density : " + std::to_string(config.rho0));
-        gmsh::logger::write("Speed of sound : " + std::to_string(config.c0));
-        gmsh::logger::write("Solver : " + config.timeIntMethod);
+        gmsh::logger::write("Simulation parameters: ");
+        gmsh::logger::write("Time step: " + std::to_string(config.timeStep));
+        gmsh::logger::write("Final time: " + std::to_string(config.timeEnd));
+        gmsh::logger::write("Mean flow velocity: (" + std::to_string(config.v0[0]) + "," + std::to_string(config.v0[1]) + "," + std::to_string(config.v0[2]) + ")");
+        gmsh::logger::write("Mean density: " + std::to_string(config.rho0));
+        gmsh::logger::write("Speed of sound: " + std::to_string(config.c0));
+        gmsh::logger::write("Mesh file: " + config.meshFileName);
+        gmsh::logger::write("Solver: " + config.timeIntMethod);
 
         return config;
     }
