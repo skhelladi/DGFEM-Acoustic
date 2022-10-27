@@ -224,7 +224,9 @@ namespace config
         }
         else
         {
-            throw;
+            std::string message = "Project file '"+name+"' not found or corrupted";
+            Fatal_Error(message.c_str())
+            // throw;
         }
         gmsh::logger::write("==================================================");
         gmsh::logger::write("Simulation parameters: ");
@@ -430,7 +432,9 @@ namespace config
         }
         else
         {
-            throw;
+            std::string message = "Project file '"+name+"' not found or corrupted";
+            Fatal_Error(message.c_str())
+            // throw;
         }
         gmsh::logger::write("==================================================");
         gmsh::logger::write("Simulation parameters: ");
