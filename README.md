@@ -28,8 +28,8 @@ The solver is based on [GMSH](http://gmsh.info/) library and supports a wide ran
 
 First, make sure the following libraries are installed. If you are running a linux distribution (ubuntu, debian, ...), an installation [script](https://github.com/skhelladi/DGFEM-CAA/blob/main/build.sh) is provided. 
 
-- Gmsh (v4.10.5)
-- Eigen (v3.4.0)
+- Gmsh (v4.11.0)
+- Eigen (v3.x)
 - Lapack
 - Blas
 - OpenMP
@@ -49,7 +49,7 @@ or use
 git clone https://github.com/skhelladi/DGFEM-CAA.git
 cd DGFEM-CAA
 mkdir build && cd build
-cmake ../ -DCMAKE_BUILD_TYPE=Release  -G "Unix Makefiles" -DGMSH_INCLUDE_DIRS="../gmsh-4.10.5-Linux64-sdk/include" -DGMSH_LIBRARIES="../gmsh-4.10.5-Linux64-sdk/lib/libgmsh.so" -DGMSH_EXECUTABLE="../gmsh-4.10.5-Linux64-sdk/bin/gmsh" -DEIGEN_INCLUDE_DIRS="/usr/include/eigen3"
+cmake ../ -DCMAKE_BUILD_TYPE=Release  -G "Unix Makefiles" -DGMSH_INCLUDE_DIRS="../gmsh-4.11.0-Linux64-sdk/include" -DGMSH_LIBRARIES="../gmsh-4.11.0-Linux64-sdk/lib/libgmsh.so" -DGMSH_EXECUTABLE="../gmsh-4.11.0-Linux64-sdk/bin/gmsh" -DEIGEN_INCLUDE_DIRS="/usr/include/eigen3"
 make -j4
 ```
 
