@@ -137,7 +137,7 @@ namespace solver
         /**
          * Main Loop : Time iteration
          */
-        std::ofstream outfile("residuals.txt");
+        std::ofstream outfile("residuals.csv");
         outfile << "time;res_p;res_rho;res_vx;res_vy;res_vz;elapsed_time" << std::endl;
 
         std::vector<std::ofstream> obs_outfile(config.observers.size());
@@ -396,8 +396,8 @@ namespace solver
          * Main Loop : Time iteration
          */
 
-        std::ofstream outfile("residuals.txt");
-        outfile << "time;log(res_p);log(res_rho);log(res_vx);log(res_vy);log(res_vz);elapsed_time(s)" << std::endl;
+        std::ofstream outfile("residuals.csv");
+        outfile << "time;res_p;res_rho;res_vx;res_vy;res_vz;elapsed_time" << std::endl;
 
         std::vector<std::ofstream> obs_outfile(config.observers.size());
         data4wave.clear();
@@ -541,7 +541,7 @@ namespace solver
             {
                 residual[eq] /= (mesh.getElNum() * mesh.getElNumNodes());
                 std::cout << std::scientific << residual[eq] << "\t";
-                outfile << log(residual[eq]) << ";";
+                outfile << residual[eq] << ";";
             }
             std::cout << elapsed_time.count() * 1.0e-6 << " s" << std::endl;
             outfile << elapsed_time.count() * 1.0e-6 << std::endl;
