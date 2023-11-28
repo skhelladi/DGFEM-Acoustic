@@ -28,7 +28,7 @@ The solver is based on [GMSH](http://gmsh.info/) library and supports a wide ran
 
 First, make sure the following libraries are installed. If you are running a linux distribution (ubuntu, debian, ...), an installation [script](https://github.com/skhelladi/DGFEM-CAA/blob/main/build.sh) is provided. 
 
-- Gmsh (v4.11.0)
+- Gmsh (v4.11.x)
 - Eigen (v3.x)
 - Lapack
 - Blas
