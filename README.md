@@ -272,6 +272,10 @@ observer2 = -2.11792,0.00340081,0.0,0.1
 	}
 }
 ```
+## License
+
+This project is licensed under the GPL-3 license.
+
 ## Author
 * Sofiane Khelladi
 

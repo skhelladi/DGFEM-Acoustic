@@ -1,5 +1,7 @@
 #!/bin/sh
-
+echo "Clean results dir."
+rm results/*
+echo "Start computations"
 # build/bin/dgalerkin doc/config/Cube.conf
 # build/bin/dgalerkin  doc/config/Sphere.conf
 # build/bin/dgalerkin  doc/config/Urban_3D.conf
@@ -7,4 +9,9 @@
 
 # build/bin/dgalerkin doc/config/Square.conf
 
-build/bin/dgalerkin doc/config/Square.json
+#build/bin/dgalerkin doc/config/Square.json
+
+build/bin/dgalerkin cases/2d_hilltop/2d_hilltop.json
+#build/bin/dgalerkin cases/2d_hilltop/2d_hilltop.conf
+#build/bin/dgalerkin cases/2d_hilltop/rectangle.json
+#build/bin/dgalerkin cases/2d_hilltop/bump.json

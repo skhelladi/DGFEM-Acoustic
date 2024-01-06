@@ -283,7 +283,7 @@ Mesh::Mesh(Config config) : config(config)
 
         if (m_fDim == 2)
         {
-            //! only primary nodes are used  
+            //! only primary nodes are used
             std::vector<double> p1 = {fIntPtCoord(f, 0, 0), fIntPtCoord(f, 0, 1), fIntPtCoord(f, 0, 2)};
             std::vector<double> p2 = {fIntPtCoord(f, 1, 0), fIntPtCoord(f, 1, 1), fIntPtCoord(f, 1, 2)};
             std::vector<double> p3 = {fIntPtCoord(f, 2, 0), fIntPtCoord(f, 2, 1), fIntPtCoord(f, 2, 2)};
@@ -632,7 +632,7 @@ Mesh::Mesh(Config config) : config(config)
                 double c0(config.c0), rho0(config.rho0);
                 double vx0(config.v0[0]), vy0(config.v0[1]), vz0(config.v0[2]);
                 double vn0 = vx0 * nx + vy0 * ny + vz0 * nz;
-                double lambda = (vn0 < 0) ? 0 : -1; // FIXME: Warning: lambda=-1 and not 1, this work but there is probably a bug in the code 
+                double lambda = (vn0 < 0) ? 0 : -1; // FIXME: Warning: lambda=-1 and not 1, this work but there is probably a bug in the code
                                                     // (pre-processing)...
 
                 // double L1(fabs(vn0-c0)), L2(fabs(vn0+c0)), L3(fabs(vn0-c0));
@@ -661,7 +661,6 @@ Mesh::Mesh(Config config) : config(config)
                 RKR[i][13] = 0.25 * ((c0 + vn0) * nz * nx - vn0 * lambda * (tx * tz + sx * sz));
                 RKR[i][14] = 0.25 * ((c0 + vn0) * nz * ny - vn0 * lambda * (ty * tz + sy * sz));
                 RKR[i][15] = 0.25 * ((c0 + vn0) * nz * nz - vn0 * lambda * (tz * tz + sz * sz));
-
             }
         }
     }
@@ -911,18 +910,20 @@ void Mesh::updateFlux(std::vector<std::vector<double>> &u, std::vector<std::vect
 
                     if (m_fBC[fId] == 1)
                     {
-                        // Normal component of velocity
-                        double dot = fNormal(fId, g, 0) * uGhost[1][gId] +
-                                     fNormal(fId, g, 1) * uGhost[2][gId] +
-                                     fNormal(fId, g, 2) * uGhost[3][gId];
+                        double nx(fNormal(fId, g, 0)), ny(fNormal(fId, g, 1)), nz(fNormal(fId, g, 2));
+                        double dot = nx * uGhost[1][gId] +
+                                     ny * uGhost[2][gId] +
+                                     nz * uGhost[3][gId];
+// #pragma omp critical
+                        // std::cout << nx << " " << ny << " " << nz << std::endl;
 
 // Remove normal component (Rigid Wall BC)
 #pragma omp atomic
-                        uGhost[1][gId] -= dot * fNormal(fId, g, 0);
+                        uGhost[1][gId] -= dot * nx;
 #pragma omp atomic
-                        uGhost[2][gId] -= dot * fNormal(fId, g, 1);
+                        uGhost[2][gId] -= dot * ny;
 #pragma omp atomic
-                        uGhost[3][gId] -= dot * fNormal(fId, g, 2);
+                        uGhost[3][gId] -= dot * nz;
 
                         // Flux at integration points
                         // 1) Pressure flux
