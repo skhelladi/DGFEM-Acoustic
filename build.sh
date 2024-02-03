@@ -106,17 +106,31 @@ else
 	echo "nlohmann-json3-dev installed.";
 fi
 
+gmsh_version=4.12.2
+# LINUX
 if [ ! -d "3rdParty/gmsh" ]; then
 	echo "Gmsh not found, installing...";
-	wget http://gmsh.info/bin/Linux/gmsh-4.11.1-Linux64-sdk.tgz
-	tar -xf gmsh-4.11.1-Linux64-sdk.tgz
-	rm -rf gmsh-4.11.1-Linux64-sdk.tgz
-	mv gmsh-4.11.1-Linux64-sdk 3rdParty/gmsh
+	wget http://gmsh.info/bin/Linux/gmsh-${gmsh_version}-Linux64-sdk.tgz
+	tar -xf gmsh-${gmsh_version}-Linux64-sdk.tgz
+	rm -rf gmsh-${gmsh_version}-Linux64-sdk.tgz
+	mv gmsh-${gmsh_version}-Linux64-sdk 3rdParty/gmsh
 	echo "Gmsh installed."
 else
-       echo "Gmsh found.";
-       
+	   echo "Gmsh found.";
 fi
+# macOS
+# if [ ! -d "3rdParty/gmsh" ]; then
+# 	echo "Gmsh not found, installing...";
+# 	wget https://gmsh.info/bin/macOS/gmsh-${gmsh_version}-MacOSX-sdk.tgz
+# 	tar -xf gmsh-${gmsh_version}-MacOSX-sdk.tgz
+# 	rm -rf gmsh-${gmsh_version}-MacOSX-sdk.tgz
+# 	mv gmsh-${gmsh_version}-MacOSX-sdk 3rdParty/gmsh
+# 	echo "Gmsh installed."
+# else
+# 	echo "Gmsh found.";
+# fi
+
+
 cd 3rdParty/gmsh/
 export FC=gfortran
 export PATH=${PWD}/bin:${PWD}/lib:${PATH}
