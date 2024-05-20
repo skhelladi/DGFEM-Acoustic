@@ -1,0 +1,3 @@
+Merge "bump.med";
+//+
+Show "*";

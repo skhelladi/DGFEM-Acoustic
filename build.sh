@@ -106,7 +106,7 @@ else
 	echo "nlohmann-json3-dev installed.";
 fi
 
-gmsh_version=4.12.2
+gmsh_version=4.13.0
 # LINUX
 if [ ! -d "3rdParty/gmsh" ]; then
 	echo "Gmsh not found, installing...";
